@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>People Picker</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #f3f3f3; text-align: center; padding: 30px; }
+    .choice-container { display: flex; justify-content: center; gap: 40px; margin: 40px 0; }
+    .choice { background: white; padding: 20px 40px; border-radius: 10px; box-shadow: 0 2px 6px rgba(0,0,0,0.2); cursor: pointer; font-size: 1.3em; }
+    .choice:hover { background: #d1e7ff; transform: scale(1.05); }
+    button { padding: 10px 20px; border: none; background: #007bff; color: white; border-radius: 6px; cursor: pointer; margin: 5px; }
+    button:hover { background: #0056b3; }
+    table { margin: auto; border-collapse: collapse; background: white; box-shadow: 0 2px 6px rgba(0,0,0,0.2); }
+    th, td { padding: 10px 20px; border-bottom: 1px solid #ccc; }
+    th { background: #007bff; color: white; }
+    .suggestion-card { background: white; padding: 10px; margin: 10px auto; width: 300px; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.2); }
+  </style>
+</head>
+<body>
+
+  <h1>Pick One!</h1>
+  <div class="choice-container">
+    <div class="choice" id="choice1"></div>
+    <div class="choice" id="choice2"></div>
+  </div>
+  <button onclick="nextRound()">Skip</button>
+
+  <div id="leaderboard">
+    <h2>Leaderboard</h2>
+    <table>
+      <thead><tr><th>Rank</th><th>Name</th><th>Votes</th></tr></thead>
+      <tbody id="leaderboard-body"></tbody>
+    </table>
+  </div>
+
+  <button onclick="resetLeaderboard()">Reset Leaderboard</button>
+  <button onclick="suggestName()">Suggest a Name</button>
+  <button onclick="reviewSuggestions()">Review Suggestions</button>
+
+  <div id="suggestions-panel" style="margin-top:20px;"></div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getFirestore, doc, getDoc, setDoc, updateDoc, increment, collection, query, orderBy, onSnapshot, writeBatch, addDoc, serverTimestamp, deleteDoc, getDocs } 
+      from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyAzDUM_vivcTLN7dGMKEeBYMFR5Wp4dKH8",
+      authDomain: "boporbaddie.firebaseapp.com",
+      projectId: "boporbaddie",
+      storageBucket: "boporbaddie.firebasestorage.app",
+      messagingSenderId: "32915423043",
+      appId: "1:32915423043:web:8ecb3ced9d82e122dc79f6"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    // Initial seed names for first-time setup
+    const seedNames = [
+      "Nidhi", "Yachna", "Poorvi", "Ananya",
+      "Neha", "Liri", "Tiya", "Eshanika",
+      "Diya", "Aditi", "Mehak", "Gayatri"
+    ];
+
+    let allPeople = []; // now dynamic from Firestore
+    let currentChoices = [];
+    let lastChoices = [];
+
+    async function initScores() {
+      for (let person of seedNames) {
+        let ref = doc(db, "leaderboard", person);
+        let snap = await getDoc(ref);
+        if (!snap.exists()) {
+          await setDoc(ref, { name: person, votes: 0 });
+        }
+      }
+    }
+
+    // Listen for leaderboard changes and update pool + table
+    function updateLeaderboardLive() {
+      const q = query(collection(db, "leaderboard"), orderBy("votes", "desc"));
+      onSnapshot(q, snapshot => {
+        let tbody = document.getElementById("leaderboard-body");
+        tbody.innerHTML = "";
+        let rank = 1;
+        allPeople = []; // reset pool and refill from Firestore
+        snapshot.forEach(docSnap => {
+          let data = docSnap.data();
+          allPeople.push(data.name); // build live voting pool
+          tbody.innerHTML += `<tr><td>${rank++}</td><td>${data.name}</td><td>${data.votes}</td></tr>`;
+        });
+
+        // If we just approved a new name, refresh choices
+        if (currentChoices.length === 0) {
+          nextRound();
+        }
+      });
+    }
+
+    function getRandomPerson(excludeList = []) {
+      let available = allPeople.filter(p => !excludeList.includes(p));
+      return available.length > 0
+        ? available[Math.floor(Math.random() * available.length)]
+        : null;
+    }
+
+    function nextRound() {
+      if (allPeople.length < 2) {
+        document.getElementById("choice1").innerText = "Not enough players";
+        document.getElementById("choice2").innerText = "Add more names";
+        return;
+      }
+      let p1 = getRandomPerson(lastChoices);
+      let p2 = getRandomPerson([...lastChoices, p1]);
+      currentChoices = [p1, p2];
+      lastChoices = [p1, p2];
+      document.getElementById("choice1").innerText = p1;
+      document.getElementById("choice2").innerText = p2;
+    }
+
+    async function pick(index) {
+      let chosen = currentChoices[index];
+      let ref = doc(db, "leaderboard", chosen);
+      await updateDoc(ref, { votes: increment(1) });
+      nextRound();
+    }
+
+    async function resetLeaderboard() {
+      const adminCode = "secret123";
+      const entered = prompt("Enter admin reset code:");
+      if (entered !== adminCode) {
+        alert("Incorrect code!");
+        return;
+      }
+      if (!confirm("Are you sure you want to reset all votes?")) return;
+      const batch = writeBatch(db);
+      allPeople.forEach(person => {
+        const ref = doc(db, "leaderboard", person);
+        batch.update(ref, { votes: 0 });
+      });
+      await batch.commit();
+      alert("Leaderboard has been reset!");
+    }
+
+    async function suggestName() {
+      const name = prompt("Enter the name you want to suggest:");
+      if (!name || name.trim() === "") {
+        alert("Name cannot be empty.");
+        return;
+      }
+      await addDoc(collection(db, "suggestions"), {
+        name: name.trim(),
+        timestamp: serverTimestamp()
+      });
+      alert("Your suggestion has been sent for review!");
+    }
+
+    async function reviewSuggestions() {
+      const adminCode = "secret123";
+      const entered = prompt("Enter admin code:");
+      if (entered !== adminCode) {
+        alert("Incorrect code!");
+        return;
+      }
+
+      const suggestionsDiv = document.getElementById("suggestions-panel");
+      suggestionsDiv.innerHTML = "<h3>Pending Suggestions</h3>";
+
+      const snap = await getDocs(collection(db, "suggestions"));
+      if (snap.empty) {
+        suggestionsDiv.innerHTML += "<p>No pending suggestions.</p>";
+        return;
+      }
+
+      snap.forEach(docSnap => {
+        const data = docSnap.data();
+        const name = data.name;
+        const id = docSnap.id;
+
+        const card = document.createElement("div");
+        card.className = "suggestion-card";
+        card.innerHTML = `
+          <strong>${name}</strong><br>
+          <button onclick="approveSuggestion('${id}', '${name}')">Approve</button>
+          <button onclick="rejectSuggestion('${id}')">Reject</button>
+        `;
+        suggestionsDiv.appendChild(card);
+      });
+    }
+
+    async function approveSuggestion(id, name) {
+      await setDoc(doc(db, "leaderboard", name), { name: name, votes: 0 });
+      await deleteDoc(doc(db, "suggestions", id));
+      alert(`Approved and added "${name}" to leaderboard!`);
+      reviewSuggestions();
+    }
+
+    async function rejectSuggestion(id) {
+      await deleteDoc(doc(db, "suggestions", id));
+      alert("Suggestion rejected.");
+      reviewSuggestions();
+    }
+
+    document.getElementById("choice1").addEventListener("click", () => pick(0));
+    document.getElementById("choice2").addEventListener("click", () => pick(1));
+
+    // Init
+    initScores().then(() => {
+      updateLeaderboardLive();
+    });
+
+    // Expose admin functions
+    window.resetLeaderboard = resetLeaderboard;
+    window.suggestName = suggestName;
+    window.reviewSuggestions = reviewSuggestions;
+    window.approveSuggestion = approveSuggestion;
+    window.rejectSuggestion = rejectSuggestion;
+  </script>
+</body>
+</html>
