@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>SMASH WHO?</title>
   <style>
@@ -43,7 +43,6 @@
       color: #bbb;
       margin-bottom: 20px;
     }
-
     .choice-container {
       display: flex;
       justify-content: center;
@@ -68,7 +67,6 @@
       transform: scale(1.05);
       box-shadow: 0 0 20px var(--hover-color, #00f0ff);
     }
-
     @keyframes shake {
       0%, 100% { transform: translateX(0); }
       25% { transform: translateX(-5px); }
@@ -95,7 +93,6 @@
       animation: fadeInAnim 0.2s forwards;
     }
     @keyframes fadeInAnim { to { opacity: 1; } }
-
     button {
       padding: 14px 20px;
       border: none;
@@ -117,10 +114,7 @@
       opacity: 0.6;
       cursor: not-allowed;
     }
-    .danger {
-      background: #ff0044;
-    }
-
+    .danger { background: #ff0044; }
     #leaderboard {
       margin-top: 30px;
       overflow-x: auto;
@@ -146,7 +140,6 @@
     .gold { background-color: rgba(255, 215, 0, 0.15); font-weight: bold; }
     .silver { background-color: rgba(192, 192, 192, 0.15); font-weight: bold; }
     .bronze { background-color: rgba(205, 127, 50, 0.15); font-weight: bold; }
-
     .sticky-bar {
       display: flex;
       gap: 8px;
@@ -175,92 +168,32 @@
         text-overflow: ellipsis;
       }
     }
-
-    /* Fullscreen modal */
-    #funWarningModal {
+    /* Rain Canvas */
+    #rainCanvas {
       position: fixed;
       top: 0;
       left: 0;
       width: 100%;
       height: 100%;
-      background: rgba(10, 10, 20, 0.95);
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      z-index: 9999;
-      animation: fadeIn 0.4s ease;
-    }
-    #funWarningBox {
-      background: rgba(30, 30, 47, 0.95);
-      padding: 25px;
-      border-radius: 12px;
-      max-width: 90%;
-      text-align: center;
-      box-shadow: 0 0 20px #ff00ff88;
-      animation: scaleIn 0.3s ease;
-    }
-    #funWarningBox h2 {
-      margin-top: 0;
-      color: #ff00ff;
-      font-size: 1.5em;
-    }
-    #funWarningBox p {
-      color: #ccc;
-      margin: 15px 0;
-      font-size: 1.1em;
-      line-height: 1.4em;
-    }
-    #funWarningBox button {
-      background: #9b00ff;
-      color: white;
-      padding: 10px 20px;
-      border: none;
-      border-radius: 8px;
-      font-size: 1em;
-      font-weight: bold;
-      cursor: pointer;
-      transition: box-shadow 0.3s ease, transform 0.2s ease;
-    }
-    #funWarningBox button:hover {
-      transform: scale(1.05);
-      box-shadow: 0 0 15px #ff00ff;
-    }
-    @keyframes fadeIn {
-      from { opacity: 0; }
-      to { opacity: 1; }
-    }
-    @keyframes scaleIn {
-      from { transform: scale(0.9); opacity: 0; }
-      to { transform: scale(1); opacity: 1; }
+      z-index: -1;
+      background: transparent;
     }
   </style>
 </head>
 <body>
-
-  <!-- Warning Modal -->
-  <div id="funWarningModal" style="display:none;">
-    <div id="funWarningBox">
-      <h2>⚠ Just for Fun</h2>
-      <p>This website is just for fun and jokes — nothing here should be taken seriously.</p>
-      <button onclick="closeFunWarning()">OK</button>
-    </div>
-  </div>
-
-  <h1>SMASH WHO? 😍🥵</h1>
-  <p class="tagline"><span class="emoji"></span> Welcome to SMASH OR PASS duos — an anonymous choosing app where players pick between two random baddies.</p>
+  <canvas id="rainCanvas"></canvas>
+  <h1>SMASH WHO?</h1>
+  <p class="tagline"><span class="emoji">😍🥵</span> Welcome to SMASH OR PASS duos — an anonymous choosing app where players pick between two random baddies (or uggos).<br>Every pick counts towards the public leaderboard. No sign-ups, no tracking — just pure fun HAHHAH.</p>
   <div id="vote-counter">Votes left: 10/10</div>
   <div id="reset-timer">Next reset in: 3h 00m 00s</div>
-
   <div class="choice-container">
     <div class="choice" id="choice1"></div>
     <div class="choice" id="choice2"></div>
   </div>
-
   <div class="sticky-bar">
     <button id="skipBtn" onclick="skipRound()">Skip</button>
     <button onclick="suggestName()">Suggest Name</button>
   </div>
-
   <div id="leaderboard">
     <h2>Leaderboard</h2>
     <table>
@@ -268,27 +201,12 @@
       <tbody id="leaderboard-body"></tbody>
     </table>
   </div>
-
   <button class="danger" onclick="resetLeaderboard()">Reset Leaderboard</button>
   <button onclick="reviewSuggestions()">Review Suggestions</button>
-
   <div id="suggestions-panel" style="margin-top:20px;"></div>
 
+  <!-- Firebase Voting Script -->
   <script type="module">
-    // Modal
-    function showFunWarning() {
-      if (!localStorage.getItem("funWarningSeen")) {
-        document.getElementById("funWarningModal").style.display = "flex";
-      }
-    }
-    window.closeFunWarning = function () {
-      document.getElementById("funWarningModal").style.display = "none";
-      localStorage.setItem("funWarningSeen", "true");
-    };
-
-    // Show modal immediately
-    showFunWarning();
-
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
     import { getFirestore, doc, getDoc, setDoc, updateDoc, increment, collection, query, orderBy, onSnapshot, writeBatch, addDoc, serverTimestamp, deleteDoc, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
@@ -313,31 +231,25 @@
       let lastReset = parseInt(localStorage.getItem("lastVoteReset") || "0");
       let now = Date.now();
       let threeHours = 3 * 60 * 60 * 1000;
-
       if (!lastReset || now - lastReset > threeHours) {
         localStorage.setItem("votesUsed", "0");
         localStorage.setItem("lastVoteReset", now.toString());
       }
     }
-
     function updateVoteCounter() {
       const used = parseInt(localStorage.getItem("votesUsed") || "0");
       document.getElementById("vote-counter").innerText = `Votes left: ${Math.max(0, 10 - used)}/10`;
     }
-
     function updateResetTimer() {
       let lastReset = parseInt(localStorage.getItem("lastVoteReset") || "0");
       let now = Date.now();
       let threeHours = 3 * 60 * 60 * 1000;
       let nextReset = lastReset + threeHours;
       let diff = Math.max(0, nextReset - now);
-
       let hours = Math.floor(diff / (1000 * 60 * 60));
       let minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
       let seconds = Math.floor((diff % (1000 * 60)) / 1000);
-
       document.getElementById("reset-timer").innerText = `Next reset in: ${hours}h ${minutes.toString().padStart(2,"0")}m ${seconds.toString().padStart(2,"0")}s`;
-
       if (diff <= 0) {
         checkVoteReset();
         updateVoteCounter();
@@ -351,18 +263,15 @@
       document.getElementById("choice1").className = "choice";
       document.getElementById("choice2").className = "choice";
     }
-
     function setRandomHoverColor(element) {
       const colors = ['#ff00ff', '#00f0ff', '#ff8800'];
       const randomColor = colors[Math.floor(Math.random() * colors.length)];
       element.style.setProperty('--hover-color', randomColor);
     }
-
     function skipRound() {
       resetChoices();
       nextRound();
     }
-
     async function initScores() {
       const seedNames = ["Nidhi", "Yachna", "Poorvi", "Ananya", "Neha", "Liri", "Tiya", "Eshanika", "Diya", "Aditi", "Mehak", "Gayatri"];
       for (let person of seedNames) {
@@ -375,7 +284,6 @@
       checkVoteReset();
       updateVoteCounter();
     }
-
     function updateLeaderboardLive() {
       const q = query(collection(db, "leaderboard"), orderBy("votes", "desc"));
       onSnapshot(q, snapshot => {
@@ -397,28 +305,23 @@
         if (currentChoices.length === 0) nextRound();
       });
     }
-
     function getRandomPerson(excludeList = []) {
       let available = allPeople.filter(p => !excludeList.includes(p));
       return available.length > 0 ? available[Math.floor(Math.random() * available.length)] : null;
     }
-
     function nextRound() {
       resetChoices();
       const skipBtn = document.getElementById("skipBtn");
       skipBtn.disabled = false;
-
       if (allPeople.length < 2) {
         document.getElementById("choice1").innerText = "Not enough players";
         document.getElementById("choice2").innerText = "Add more names";
         return;
       }
-
       let p1 = getRandomPerson(lastChoices);
       let p2 = getRandomPerson([...lastChoices, p1]);
       currentChoices = [p1, p2];
       lastChoices = [p1, p2];
-
       const c1 = document.getElementById("choice1");
       const c2 = document.getElementById("choice2");
       c1.className = "choice fade-in";
@@ -427,13 +330,11 @@
       c2.innerText = p2;
       setRandomHoverColor(c1);
       setRandomHoverColor(c2);
-
-      animationTimeouts.push(setTimeout(() => {
+      setTimeout(() => {
         c1.classList.remove("fade-in");
         c2.classList.remove("fade-in");
-      }, 200));
+      }, 200);
     }
-
     async function pick(index) {
       let votesUsed = parseInt(localStorage.getItem("votesUsed") || "0");
       if (votesUsed >= 10) {
@@ -442,36 +343,29 @@
       }
       localStorage.setItem("votesUsed", votesUsed + 1);
       updateVoteCounter();
-
       const skipBtn = document.getElementById("skipBtn");
       skipBtn.disabled = true;
-
       const chosenId = index === 0 ? "choice1" : "choice2";
       const loserId = index === 0 ? "choice2" : "choice1";
       const chosenEl = document.getElementById(chosenId);
       const loserEl = document.getElementById(loserId);
-
       chosenEl.classList.add("shake");
-      animationTimeouts.push(setTimeout(() => {
+      setTimeout(() => {
         chosenEl.classList.remove("shake");
         chosenEl.classList.add("winner");
         loserEl.classList.add("loser");
-      }, 150));
-
+      }, 150);
       let chosen = currentChoices[index];
       let ref = doc(db, "leaderboard", chosen);
       await updateDoc(ref, { votes: increment(1) });
-
-      animationTimeouts.push(setTimeout(() => {
+      setTimeout(() => {
         chosenEl.classList.add("fade-out");
         loserEl.classList.add("fade-out");
-      }, 350));
-
-      animationTimeouts.push(setTimeout(() => {
+      }, 350);
+      setTimeout(() => {
         nextRound();
-      }, 550));
+      }, 550);
     }
-
     async function resetLeaderboard() {
       resetChoices();
       const adminCode = "secret123";
@@ -484,7 +378,6 @@
       await batch.commit();
       alert("Leaderboard has been reset!");
     }
-
     async function suggestName() {
       resetChoices();
       const name = prompt("Enter the name you want to suggest:");
@@ -492,7 +385,6 @@
       await addDoc(collection(db, "suggestions"), { name: name.trim(), timestamp: serverTimestamp() });
       alert("Your suggestion has been sent for review!");
     }
-
     async function reviewSuggestions() {
       resetChoices();
       const adminCode = "secret123";
@@ -513,7 +405,6 @@
         `;
       });
     }
-
     async function approveSuggestion(id, name) {
       resetChoices();
       await setDoc(doc(db, "leaderboard", name), { name: name, votes: 0 });
@@ -521,25 +412,69 @@
       alert(`Approved and added "${name}" to leaderboard!`);
       reviewSuggestions();
     }
-
     async function rejectSuggestion(id) {
       resetChoices();
       await deleteDoc(doc(db, "suggestions", id));
       alert("Suggestion rejected.");
       reviewSuggestions();
     }
-
     document.getElementById("choice1").addEventListener("click", () => pick(0));
     document.getElementById("choice2").addEventListener("click", () => pick(1));
-
     initScores().then(() => updateLeaderboardLive());
-
     window.skipRound = skipRound;
     window.resetLeaderboard = resetLeaderboard;
     window.suggestName = suggestName;
     window.reviewSuggestions = reviewSuggestions;
     window.approveSuggestion = approveSuggestion;
     window.rejectSuggestion = rejectSuggestion;
+  </script>
+
+  <!-- Purple Rain Background Script -->
+  <script>
+    const rainCanvas = document.getElementById("rainCanvas");
+    const ctx = rainCanvas.getContext("2d");
+    let width, height;
+    function resizeCanvas() {
+      width = rainCanvas.width = window.innerWidth;
+      height = rainCanvas.height = window.innerHeight;
+    }
+    window.addEventListener("resize", resizeCanvas);
+    resizeCanvas();
+    class Raindrop {
+      constructor() { this.reset(); }
+      reset() {
+        this.x = Math.random() * width;
+        this.y = Math.random() * -height;
+        this.length = Math.random() * 15 + 10;
+        this.speed = Math.random() * 4 + 2;
+        this.opacity = Math.random() * 0.2 + 0.1;
+      }
+      update() {
+        this.y += this.speed;
+        if (this.y > height) this.reset();
+      }
+      draw() {
+        ctx.beginPath();
+        ctx.strokeStyle = `rgba(200, 0, 255, ${this.opacity})`;
+        ctx.lineWidth = 1.2;
+        ctx.moveTo(this.x, this.y);
+        ctx.lineTo(this.x, this.y + this.length);
+        ctx.shadowBlur = 8;
+        ctx.shadowColor = "rgba(200, 0, 255, 0.6)";
+        ctx.stroke();
+      }
+    }
+    const drops = [];
+    for (let i = 0; i < 120; i++) drops.push(new Raindrop());
+    function animateRain() {
+      ctx.clearRect(0, 0, width, height);
+      for (let drop of drops) {
+        drop.update();
+        drop.draw();
+      }
+      requestAnimationFrame(animateRain);
+    }
+    animateRain();
   </script>
 </body>
 </html>
