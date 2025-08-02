@@ -2,6 +2,7 @@
 <html>
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>People Picker</title>
   <style>
     body {
@@ -16,7 +17,7 @@
       text-shadow: 0 0 10px #ff00ff88;
     }
     .tagline {
-      font-size: 1.1em;
+      font-size: 1.3em;
       color: #ccc;
       margin-top: -10px;
       margin-bottom: 30px;
@@ -26,6 +27,24 @@
       font-size: 1.5em;
       vertical-align: middle;
       margin-right: 5px;
+    }
+    @media (max-width: 600px) {
+      body {
+        padding: 15px;
+      }
+      .tagline {
+        font-size: 1.2em;
+        padding: 0 10px;
+        line-height: 1.4em;
+      }
+      .choice-container {
+        flex-direction: column;
+        gap: 20px;
+      }
+      .choice {
+        width: 80%;
+        margin: auto;
+      }
     }
     .choice-container {
       display: flex;
@@ -198,7 +217,7 @@
     }
 
     function setRandomHoverColor(element) {
-      const colors = ['#ff00ff', '#00f0ff', '#ff8800']; // no red or green
+      const colors = ['#ff00ff', '#00f0ff', '#ff8800'];
       const randomColor = colors[Math.floor(Math.random() * colors.length)];
       element.style.setProperty('--hover-color', randomColor);
     }
@@ -308,7 +327,6 @@
       }, 550));
     }
 
-    // Buttons and suggestion handling
     async function resetLeaderboard() {
       resetChoices();
       const adminCode = "secret123";
@@ -386,7 +404,6 @@
       reviewSuggestions();
     }
 
-    // Event listeners
     document.getElementById("choice1").addEventListener("click", () => pick(0));
     document.getElementById("choice2").addEventListener("click", () => pick(1));
 
