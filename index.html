@@ -159,12 +159,17 @@
         width: 100%;
         background: rgba(20, 20, 30, 0.8);
         backdrop-filter: blur(6px);
-        padding: 10px;
+        padding: 8px;
         box-shadow: 0 -2px 10px rgba(0,0,0,0.4);
+        display: flex;
+        gap: 8px;
       }
       .sticky-bar button {
         flex: 1;
         margin: 0;
+        font-size: 0.95em; /* slightly smaller for narrow screens */
+        padding: 12px 8px; /* less side padding */
+        white-space: nowrap; /* keep text in one line */
       }
     }
   </style>
