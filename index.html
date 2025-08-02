@@ -311,14 +311,23 @@
       await deleteDoc(doc(db, "suggestions", id));
       reviewSuggestions();
     }
-
     async function joinPresence() {
-      const id = Math.random().toString(36).substr(2, 9);
+      // Check if we already have a presence ID for this session
+      let id = sessionStorage.getItem("presenceId");
+      if (!id) {
+        id = Math.random().toString(36).substr(2, 9);
+        sessionStorage.setItem("presenceId", id);
+      }
+
       userDocRef = doc(db, "onlineUsers", id);
       await setDoc(userDocRef, { lastActive: serverTimestamp() });
+
+      // Update every 30s
       setInterval(async () => {
         await updateDoc(userDocRef, { lastActive: serverTimestamp() });
       }, 30000);
+
+      // Remove only when tab is closed
       window.addEventListener("beforeunload", async () => {
         await deleteDoc(userDocRef);
       });
