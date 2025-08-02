@@ -26,17 +26,11 @@
       margin-bottom: 15px;
       text-shadow: 0 0 5px #ff00ff55;
     }
-    .emoji {
-      font-size: 1.5em;
-      vertical-align: middle;
-      margin-right: 5px;
-    }
     #vote-counter {
       font-size: 1.1em;
       margin-bottom: 5px;
       color: #ff00ff;
       font-weight: bold;
-      text-shadow: 0 0 5px rgba(255,255,255,0.5);
     }
     #reset-timer {
       font-size: 0.95em;
@@ -58,41 +52,20 @@
       cursor: pointer;
       font-size: 1.5em;
       font-weight: bold;
-      transition: transform 0.2s ease, background-color 0.2s ease, opacity 0.3s ease, box-shadow 0.3s ease;
+      transition: transform 0.2s ease, background-color 0.2s ease;
       min-width: 140px;
       max-width: 90%;
-      word-wrap: break-word;
     }
-    .choice:hover {
-      transform: scale(1.05);
-      box-shadow: 0 0 20px var(--hover-color, #00f0ff);
-    }
+    .choice:hover { transform: scale(1.05); }
+    .shake { animation: shake 0.15s; }
     @keyframes shake {
       0%, 100% { transform: translateX(0); }
       25% { transform: translateX(-5px); }
       50% { transform: translateX(5px); }
       75% { transform: translateX(-5px); }
     }
-    .shake { animation: shake 0.15s; }
-    .winner {
-      background-color: rgba(0, 255, 100, 0.3) !important;
-      transform: scale(1.1);
-      box-shadow: 0 0 20px #00ff88;
-    }
-    .loser {
-      background-color: rgba(255, 50, 50, 0.3) !important;
-      transform: scale(0.95);
-      opacity: 0.7;
-    }
-    .fade-out {
-      opacity: 0 !important;
-      transform: scale(0.9);
-    }
-    .fade-in {
-      opacity: 0;
-      animation: fadeInAnim 0.2s forwards;
-    }
-    @keyframes fadeInAnim { to { opacity: 1; } }
+    .winner { background-color: rgba(0, 255, 100, 0.3) !important; }
+    .loser { background-color: rgba(255, 50, 50, 0.3) !important; opacity: 0.7; }
     button {
       padding: 14px 20px;
       border: none;
@@ -103,43 +76,8 @@
       margin: 8px;
       font-weight: bold;
       font-size: 1.1em;
-      text-shadow: 0 0 5px rgba(255,255,255,0.7);
-      transition: box-shadow 0.3s ease, transform 0.2s ease;
-    }
-    button:hover {
-      box-shadow: 0 0 20px var(--hover-color, #00f0ff);
-      transform: scale(1.05);
-    }
-    button:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
     }
     .danger { background: #ff0044; }
-    #leaderboard {
-      margin-top: 30px;
-      overflow-x: auto;
-    }
-    table {
-      border-collapse: collapse;
-      background: rgba(30, 30, 47, 0.9);
-      box-shadow: 0 0 15px #000;
-      border-radius: 10px;
-      overflow: hidden;
-      min-width: 300px;
-      margin: auto;
-      color: #fff;
-    }
-    th, td {
-      padding: 12px 15px;
-      border-bottom: 1px solid rgba(255,255,255,0.1);
-    }
-    th {
-      background: rgba(255,255,255,0.1);
-      color: #00f0ff;
-    }
-    .gold { background-color: rgba(255, 215, 0, 0.15); font-weight: bold; }
-    .silver { background-color: rgba(192, 192, 192, 0.15); font-weight: bold; }
-    .bronze { background-color: rgba(205, 127, 50, 0.15); font-weight: bold; }
     .sticky-bar {
       display: flex;
       gap: 8px;
@@ -151,24 +89,29 @@
         left: 0;
         width: 100%;
         background: rgba(20, 20, 30, 0.8);
-        backdrop-filter: blur(6px);
-        padding: 8px calc(8px + env(safe-area-inset-right)) 8px calc(8px + env(safe-area-inset-left));
-        box-shadow: 0 -2px 10px rgba(0,0,0,0.4);
+        padding: 8px;
         display: flex;
         gap: 8px;
-        box-sizing: border-box;
       }
-      .sticky-bar button {
-        flex: 1;
-        margin: 0;
-        font-size: 0.95em;
-        padding: 12px 8px;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-      }
+      .sticky-bar button { flex: 1; font-size: 0.95em; }
     }
-    /* Rain Canvas */
+    table {
+      border-collapse: collapse;
+      background: rgba(30, 30, 47, 0.9);
+      border-radius: 10px;
+      overflow: hidden;
+      min-width: 300px;
+      margin: auto;
+      color: #fff;
+    }
+    th, td {
+      padding: 12px 15px;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+    th { color: #00f0ff; }
+    .gold { background-color: rgba(255, 215, 0, 0.15); font-weight: bold; }
+    .silver { background-color: rgba(192, 192, 192, 0.15); font-weight: bold; }
+    .bronze { background-color: rgba(205, 127, 50, 0.15); font-weight: bold; }
     #rainCanvas {
       position: fixed;
       top: 0;
@@ -176,14 +119,13 @@
       width: 100%;
       height: 100%;
       z-index: -1;
-      background: transparent;
     }
   </style>
 </head>
 <body>
   <canvas id="rainCanvas"></canvas>
   <h1>SMASH WHO? 😍🥵</h1>
-  <p class="tagline">Welcome to SMASH OR PASS duos — an anonymous choosing app where players pick between two random hotties.</p>
+  <p class="tagline">Welcome to SMASH OR PASS duos — an anonymous choosing app where players pick between two random baddies.</p>
   <div id="vote-counter">Votes left: 10/10</div>
   <div id="reset-timer">Next reset in: 3h 00m 00s</div>
 
@@ -195,6 +137,10 @@
   <div class="sticky-bar">
     <button id="skipBtn" onclick="skipRound()">Skip</button>
     <button onclick="suggestName()">Suggest Name</button>
+  </div>
+
+  <div id="online-count" style="font-size:1.1em; margin-bottom:10px; color:#00f0ff; font-weight:bold;">
+    Anonymous users online: 0
   </div>
 
   <div id="leaderboard">
@@ -227,256 +173,179 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    let allPeople = [];
-    let currentChoices = [];
-    let lastChoices = [];
-    let animationTimeouts = [];
+    let allPeople = [], currentChoices = [], lastChoices = [], userDocRef = null;
+
+    function checkVoteReset() {
+      let lastReset = parseInt(localStorage.getItem("lastVoteReset") || "0");
+      let now = Date.now(), threeHours = 10800000;
+      if (!lastReset || now - lastReset > threeHours) {
+        localStorage.setItem("votesUsed", "0");
+        localStorage.setItem("lastVoteReset", now.toString());
+      }
+    }
+    function updateVoteCounter() {
+      const used = parseInt(localStorage.getItem("votesUsed") || "0");
+      document.getElementById("vote-counter").innerText = `Votes left: ${10 - used}/10`;
+    }
+    function updateResetTimer() {
+      let lastReset = parseInt(localStorage.getItem("lastVoteReset") || "0");
+      let diff = (lastReset + 10800000) - Date.now();
+      let h = Math.floor(diff / 3600000), m = Math.floor((diff % 3600000) / 60000), s = Math.floor((diff % 60000) / 1000);
+      document.getElementById("reset-timer").innerText = `Next reset in: ${h}h ${m.toString().padStart(2,"0")}m ${s.toString().padStart(2,"0")}s`;
+    }
+    setInterval(updateResetTimer, 1000);
 
     async function checkGlobalVoteReset() {
       const ref = doc(db, "settings", "votesReset");
       const snap = await getDoc(ref);
       if (snap.exists()) {
         const serverKey = snap.data().key;
-        const localKey = localStorage.getItem("votesResetKey");
-        if (serverKey !== localKey) {
+        if (serverKey !== localStorage.getItem("votesResetKey")) {
           localStorage.setItem("votesUsed", "0");
           localStorage.setItem("lastVoteReset", Date.now().toString());
           localStorage.setItem("votesResetKey", serverKey);
-          console.log("Votes reset due to global reset key change.");
         }
       }
     }
-
     async function resetAllVotes() {
-      const adminCode = "secret123";
-      if (prompt("Enter admin reset code:") !== adminCode) return alert("Incorrect code!");
+      if (prompt("Enter admin reset code:") !== "secret123") return;
       const newKey = Date.now().toString();
       await setDoc(doc(db, "settings", "votesReset"), { key: newKey });
-      alert("All users' votes have been reset!");
-    }
-
-    function checkVoteReset() {
-      let lastReset = parseInt(localStorage.getItem("lastVoteReset") || "0");
-      let now = Date.now();
-      let threeHours = 3 * 60 * 60 * 1000;
-      if (!lastReset || now - lastReset > threeHours) {
-        localStorage.setItem("votesUsed", "0");
-        localStorage.setItem("lastVoteReset", now.toString());
-      }
-    }
-
-    function updateVoteCounter() {
-      const used = parseInt(localStorage.getItem("votesUsed") || "0");
-      document.getElementById("vote-counter").innerText = `Votes left: ${Math.max(0, 10 - used)}/10`;
-    }
-
-    function updateResetTimer() {
-      let lastReset = parseInt(localStorage.getItem("lastVoteReset") || "0");
-      let now = Date.now();
-      let threeHours = 3 * 60 * 60 * 1000;
-      let nextReset = lastReset + threeHours;
-      let diff = Math.max(0, nextReset - now);
-      let hours = Math.floor(diff / (1000 * 60 * 60));
-      let minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-      let seconds = Math.floor((diff % (1000 * 60)) / 1000);
-      document.getElementById("reset-timer").innerText = `Next reset in: ${hours}h ${minutes.toString().padStart(2,"0")}m ${seconds.toString().padStart(2,"0")}s`;
-      if (diff <= 0) {
-        checkVoteReset();
-        updateVoteCounter();
-      }
-    }
-    setInterval(updateResetTimer, 1000);
-
-    function resetChoices() {
-      animationTimeouts.forEach(t => clearTimeout(t));
-      animationTimeouts = [];
-      document.getElementById("choice1").className = "choice";
-      document.getElementById("choice2").className = "choice";
-    }
-
-    function setRandomHoverColor(element) {
-      const colors = ['#ff00ff', '#00f0ff', '#ff8800'];
-      const randomColor = colors[Math.floor(Math.random() * colors.length)];
-      element.style.setProperty('--hover-color', randomColor);
-    }
-
-    function skipRound() {
-      resetChoices();
-      nextRound();
+      alert("All votes reset!");
     }
 
     async function initScores() {
-      const seedNames = ["Nidhi", "Yachna", "Poorvi", "Liri", "Eshanika", "Diya", "Aditi", "Mehak"];
-      for (let person of seedNames) {
-        let ref = doc(db, "leaderboard", person);
-        let snap = await getDoc(ref);
-        if (!snap.exists()) {
-          await setDoc(ref, { name: person, votes: 0 });
-        }
+      const seed = ["Nidhi","Yachna","Poorvi","Liri","Eshanika","Diya","Aditi","Mehak"];
+      for (let p of seed) {
+        let r = doc(db, "leaderboard", p);
+        if (!(await getDoc(r)).exists()) await setDoc(r, { name: p, votes: 0 });
       }
       checkVoteReset();
       await checkGlobalVoteReset();
       updateVoteCounter();
+      joinPresence();
+      listenOnlineUsers();
     }
-
     function updateLeaderboardLive() {
-      const q = query(collection(db, "leaderboard"), orderBy("votes", "desc"));
-      onSnapshot(q, snapshot => {
+      const qy = query(collection(db, "leaderboard"), orderBy("votes", "desc"));
+      onSnapshot(qy, snap => {
         let tbody = document.getElementById("leaderboard-body");
         tbody.innerHTML = "";
         let rank = 1;
         allPeople = [];
-        snapshot.forEach(docSnap => {
-          let data = docSnap.data();
+        snap.forEach(d => {
+          let data = d.data();
           allPeople.push(data.name);
-          let rowClass = "";
-          let medal = "";
+          let rowClass = "", medal = "";
           if (rank === 1) { rowClass = "gold"; medal = "🥇 "; }
           else if (rank === 2) { rowClass = "silver"; medal = "🥈 "; }
           else if (rank === 3) { rowClass = "bronze"; medal = "🥉 "; }
           tbody.innerHTML += `<tr class="${rowClass}"><td>${medal}${rank}</td><td>${data.name}</td><td>${data.votes}</td></tr>`;
           rank++;
         });
-        if (currentChoices.length === 0) nextRound();
+        if (!currentChoices.length) nextRound();
       });
     }
 
-    function getRandomPerson(excludeList = []) {
-      let available = allPeople.filter(p => !excludeList.includes(p));
-      return available.length > 0 ? available[Math.floor(Math.random() * available.length)] : null;
+    function getRandomPerson(exclude = []) {
+      let avail = allPeople.filter(p => !exclude.includes(p));
+      return avail[Math.floor(Math.random() * avail.length)];
     }
-
     function nextRound() {
-      resetChoices();
-      const skipBtn = document.getElementById("skipBtn");
-      skipBtn.disabled = false;
-      if (allPeople.length < 2) {
-        document.getElementById("choice1").innerText = "Not enough players";
-        document.getElementById("choice2").innerText = "Add more names";
-        return;
-      }
+      if (allPeople.length < 2) return;
       let p1 = getRandomPerson(lastChoices);
       let p2 = getRandomPerson([...lastChoices, p1]);
       currentChoices = [p1, p2];
       lastChoices = [p1, p2];
-      const c1 = document.getElementById("choice1");
-      const c2 = document.getElementById("choice2");
-      c1.className = "choice fade-in";
-      c2.className = "choice fade-in";
-      c1.innerText = p1;
-      c2.innerText = p2;
-      setRandomHoverColor(c1);
-      setRandomHoverColor(c2);
-      setTimeout(() => {
-        c1.classList.remove("fade-in");
-        c2.classList.remove("fade-in");
-      }, 200);
+      document.getElementById("choice1").innerText = p1;
+      document.getElementById("choice2").innerText = p2;
+    }
+    async function pick(i) {
+      let used = parseInt(localStorage.getItem("votesUsed") || "0");
+      if (used >= 10) return alert("Vote limit reached. Wait for reset.");
+      localStorage.setItem("votesUsed", used + 1);
+      updateVoteCounter();
+      await updateDoc(doc(db, "leaderboard", currentChoices[i]), { votes: increment(1) });
+      nextRound();
     }
 
-    async function pick(index) {
-      let votesUsed = parseInt(localStorage.getItem("votesUsed") || "0");
-      if (votesUsed >= 10) {
-        alert("You've reached the maximum of 10 votes for now. Please wait until your votes reset in 3 hours.");
+    window.skipRound = () => {
+      let used = parseInt(localStorage.getItem("votesUsed") || "0");
+      if (used >= 10) {
+        alert("Vote limit reached. Wait for reset.");
         return;
       }
-      localStorage.setItem("votesUsed", votesUsed + 1);
+      let newUsed = used + 2;
+      if (newUsed > 10) newUsed = 10;
+      localStorage.setItem("votesUsed", newUsed);
       updateVoteCounter();
-      const skipBtn = document.getElementById("skipBtn");
-      skipBtn.disabled = true;
-      const chosenId = index === 0 ? "choice1" : "choice2";
-      const loserId = index === 0 ? "choice2" : "choice1";
-      const chosenEl = document.getElementById(chosenId);
-      const loserEl = document.getElementById(loserId);
-      chosenEl.classList.add("shake");
-      setTimeout(() => {
-        chosenEl.classList.remove("shake");
-        chosenEl.classList.add("winner");
-        loserEl.classList.add("loser");
-      }, 150);
-      let chosen = currentChoices[index];
-      let ref = doc(db, "leaderboard", chosen);
-      await updateDoc(ref, { votes: increment(1) });
-      setTimeout(() => {
-        chosenEl.classList.add("fade-out");
-        loserEl.classList.add("fade-out");
-      }, 350);
-      setTimeout(() => {
-        nextRound();
-      }, 550);
-    }
+      nextRound();
+    };
 
     async function resetLeaderboard() {
-      resetChoices();
-      const adminCode = "secret123";
-      if (prompt("Enter admin reset code:") !== adminCode) return alert("Incorrect code!");
-      if (!confirm("Are you sure you want to reset all votes?")) return;
+      if (prompt("Enter admin reset code:") !== "secret123") return;
       const batch = writeBatch(db);
-      allPeople.forEach(person => {
-        batch.update(doc(db, "leaderboard", person), { votes: 0 });
-      });
+      allPeople.forEach(p => batch.update(doc(db, "leaderboard", p), { votes: 0 }));
       await batch.commit();
-      alert("Leaderboard has been reset!");
+      alert("Leaderboard reset!");
     }
 
     async function suggestName() {
-      resetChoices();
-      const name = prompt("Enter the name you want to suggest:");
-      if (!name || name.trim() === "") return alert("Name cannot be empty.");
+      const name = prompt("Enter name to suggest:");
+      if (!name) return;
       await addDoc(collection(db, "suggestions"), { name: name.trim(), timestamp: serverTimestamp() });
-      alert("Your suggestion has been sent for review!");
+      alert("Suggestion sent!");
+    }
+    async function reviewSuggestions() {
+      if (prompt("Enter admin code:") !== "secret123") return;
+      const panel = document.getElementById("suggestions-panel");
+      panel.innerHTML = "<h3>Suggestions</h3>";
+      const snap = await getDocs(collection(db, "suggestions"));
+      snap.forEach(d => {
+        const n = d.data().name;
+        panel.innerHTML += `<div>${n} <button onclick="approveSuggestion('${d.id}','${n}')">Approve</button></div>`;
+      });
+    }
+    async function approveSuggestion(id, name) {
+      await setDoc(doc(db, "leaderboard", name), { name: name, votes: 0 });
+      await deleteDoc(doc(db, "suggestions", id));
+      reviewSuggestions();
     }
 
-    async function reviewSuggestions() {
-      resetChoices();
-      const adminCode = "secret123";
-      if (prompt("Enter admin code:") !== adminCode) return alert("Incorrect code!");
-      const suggestionsDiv = document.getElementById("suggestions-panel");
-      suggestionsDiv.innerHTML = "<h3>Pending Suggestions</h3>";
-      const snap = await getDocs(collection(db, "suggestions"));
-      if (snap.empty) return suggestionsDiv.innerHTML += "<p>No pending suggestions.</p>";
-      snap.forEach(docSnap => {
-        const { name } = docSnap.data();
-        const id = docSnap.id;
-        suggestionsDiv.innerHTML += `
-          <div class="suggestion-card">
-            <strong>${name}</strong><br>
-            <button onclick="approveSuggestion('${id}', '${name}')">Approve</button>
-            <button onclick="rejectSuggestion('${id}')">Reject</button>
-          </div>
-        `;
+    async function joinPresence() {
+      const id = Math.random().toString(36).substr(2, 9);
+      userDocRef = doc(db, "onlineUsers", id);
+      await setDoc(userDocRef, { lastActive: serverTimestamp() });
+      setInterval(async () => {
+        await updateDoc(userDocRef, { lastActive: serverTimestamp() });
+      }, 30000);
+      window.addEventListener("beforeunload", async () => {
+        await deleteDoc(userDocRef);
+      });
+    }
+    function listenOnlineUsers() {
+      onSnapshot(collection(db, "onlineUsers"), snap => {
+        const now = Date.now();
+        let count = 0;
+        snap.forEach(d => {
+          const data = d.data();
+          if (data.lastActive?.toMillis && (now - data.lastActive.toMillis()) < 60000) count++;
+        });
+        document.getElementById("online-count").innerText = `Anonymous users online: ${count}`;
       });
     }
 
-    async function approveSuggestion(id, name) {
-      resetChoices();
-      await setDoc(doc(db, "leaderboard", name), { name: name, votes: 0 });
-      await deleteDoc(doc(db, "suggestions", id));
-      alert(`Approved and added "${name}" to leaderboard!`);
-      reviewSuggestions();
-    }
-
-    async function rejectSuggestion(id) {
-      resetChoices();
-      await deleteDoc(doc(db, "suggestions", id));
-      alert("Suggestion rejected.");
-      reviewSuggestions();
-    }
-
-    document.getElementById("choice1").addEventListener("click", () => pick(0));
-    document.getElementById("choice2").addEventListener("click", () => pick(1));
-
-    initScores().then(() => updateLeaderboardLive());
-
-    window.skipRound = skipRound;
+    document.getElementById("choice1").onclick = () => pick(0);
+    document.getElementById("choice2").onclick = () => pick(1);
     window.resetLeaderboard = resetLeaderboard;
     window.resetAllVotes = resetAllVotes;
     window.suggestName = suggestName;
     window.reviewSuggestions = reviewSuggestions;
     window.approveSuggestion = approveSuggestion;
-    window.rejectSuggestion = rejectSuggestion;
+
+    initScores().then(updateLeaderboardLive);
   </script>
 
-  <!-- Purple Rain Background Script -->
   <script>
     const rainCanvas = document.getElementById("rainCanvas");
     const ctx = rainCanvas.getContext("2d");
@@ -515,10 +384,7 @@
     for (let i = 0; i < 120; i++) drops.push(new Raindrop());
     function animateRain() {
       ctx.clearRect(0, 0, width, height);
-      for (let drop of drops) {
-        drop.update();
-        drop.draw();
-      }
+      drops.forEach(d => { d.update(); d.draw(); });
       requestAnimationFrame(animateRain);
     }
     animateRain();
