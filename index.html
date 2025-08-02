@@ -149,7 +149,7 @@
 
     .sticky-bar {
       display: flex;
-      gap: 10px;
+      gap: 8px;
     }
     @media (max-width: 600px) {
       .sticky-bar {
@@ -167,17 +167,84 @@
       .sticky-bar button {
         flex: 1;
         margin: 0;
-        font-size: 0.95em; /* slightly smaller for narrow screens */
-        padding: 12px 8px; /* less side padding */
-        white-space: nowrap; /* keep text in one line */
+        font-size: 0.95em;
+        padding: 12px 8px;
+        white-space: nowrap;
       }
+    }
+
+    /* Fullscreen modal */
+    #funWarningModal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(10, 10, 20, 0.95);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+      animation: fadeIn 0.4s ease;
+    }
+    #funWarningBox {
+      background: rgba(30, 30, 47, 0.95);
+      padding: 25px;
+      border-radius: 12px;
+      max-width: 90%;
+      text-align: center;
+      box-shadow: 0 0 20px #ff00ff88;
+      animation: scaleIn 0.3s ease;
+    }
+    #funWarningBox h2 {
+      margin-top: 0;
+      color: #ff00ff;
+      font-size: 1.5em;
+    }
+    #funWarningBox p {
+      color: #ccc;
+      margin: 15px 0;
+      font-size: 1.1em;
+      line-height: 1.4em;
+    }
+    #funWarningBox button {
+      background: #9b00ff;
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 8px;
+      font-size: 1em;
+      font-weight: bold;
+      cursor: pointer;
+      transition: box-shadow 0.3s ease, transform 0.2s ease;
+    }
+    #funWarningBox button:hover {
+      transform: scale(1.05);
+      box-shadow: 0 0 15px #ff00ff;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    @keyframes scaleIn {
+      from { transform: scale(0.9); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
     }
   </style>
 </head>
 <body>
 
-  <h1>SMASH WHO?</h1>
-  <p class="tagline"><span class="emoji">😍🥵</span> Welcome to SMASH OR PASS duos — an anonymous choosing app where players pick between two random baddies (or uggos).<br>Every pick counts towards the public leaderboard. No sign-ups, no tracking — just pure fun HAHHAH.</p>
+  <!-- Warning Modal -->
+  <div id="funWarningModal" style="display:none;">
+    <div id="funWarningBox">
+      <h2>⚠ Just for Fun</h2>
+      <p>This website is just for fun and jokes — nothing here should be taken seriously.</p>
+      <button onclick="closeFunWarning()">OK</button>
+    </div>
+  </div>
+
+  <h1>SMASH WHO? 😍🥵</h1>
+  <p class="tagline"><span class="emoji"></span> Welcome to SMASH OR PASS duos — an anonymous choosing app where players pick between two random baddies (or uggos).<br>Every pick counts towards the public leaderboard. No sign-ups, no tracking — just pure fun HAHHAH.</p>
   <div id="vote-counter">Votes left: 10/10</div>
   <div id="reset-timer">Next reset in: 3h 00m 00s</div>
 
@@ -205,6 +272,20 @@
   <div id="suggestions-panel" style="margin-top:20px;"></div>
 
   <script type="module">
+    // Modal
+    function showFunWarning() {
+      if (!localStorage.getItem("funWarningSeen")) {
+        document.getElementById("funWarningModal").style.display = "flex";
+      }
+    }
+    window.closeFunWarning = function () {
+      document.getElementById("funWarningModal").style.display = "none";
+      localStorage.setItem("funWarningSeen", "true");
+    };
+
+    // Show modal immediately
+    showFunWarning();
+
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
     import { getFirestore, doc, getDoc, setDoc, updateDoc, increment, collection, query, orderBy, onSnapshot, writeBatch, addDoc, serverTimestamp, deleteDoc, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
@@ -259,7 +340,6 @@
         updateVoteCounter();
       }
     }
-
     setInterval(updateResetTimer, 1000);
 
     function resetChoices() {
