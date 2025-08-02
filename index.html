@@ -273,7 +273,7 @@
       nextRound();
     }
     async function initScores() {
-      const seedNames = ["Nidhi", "Yachna", "Poorvi", "Ananya", "Neha", "Liri", "Tiya", "Eshanika", "Diya", "Aditi", "Mehak", "Gayatri"];
+      const seedNames = ["Nidhi", "Yachna", "Poorvi", "Liri", "Eshanika", "Diya", "Aditi", "Mehak"];
       for (let person of seedNames) {
         let ref = doc(db, "leaderboard", person);
         let snap = await getDoc(ref);
