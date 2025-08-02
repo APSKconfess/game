@@ -183,17 +183,20 @@
 <body>
   <canvas id="rainCanvas"></canvas>
   <h1>SMASH WHO? 😍🥵</h1>
-  <p class="tagline"><span class="emoji"></span> Welcome to SMASH OR PASS duos — an anonymous choosing app where players pick between two random hotties.</p>
+  <p class="tagline">Welcome to SMASH OR PASS duos — an anonymous choosing app where players pick between two random hotties.</p>
   <div id="vote-counter">Votes left: 10/10</div>
   <div id="reset-timer">Next reset in: 3h 00m 00s</div>
+
   <div class="choice-container">
     <div class="choice" id="choice1"></div>
     <div class="choice" id="choice2"></div>
   </div>
+
   <div class="sticky-bar">
     <button id="skipBtn" onclick="skipRound()">Skip</button>
     <button onclick="suggestName()">Suggest Name</button>
   </div>
+
   <div id="leaderboard">
     <h2>Leaderboard</h2>
     <table>
@@ -201,11 +204,13 @@
       <tbody id="leaderboard-body"></tbody>
     </table>
   </div>
+
   <button class="danger" onclick="resetLeaderboard()">Reset Leaderboard</button>
+  <button class="danger" onclick="resetAllVotes()">Reset All Votes</button>
   <button onclick="reviewSuggestions()">Review Suggestions</button>
+
   <div id="suggestions-panel" style="margin-top:20px;"></div>
 
-  <!-- Firebase Voting Script -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
     import { getFirestore, doc, getDoc, setDoc, updateDoc, increment, collection, query, orderBy, onSnapshot, writeBatch, addDoc, serverTimestamp, deleteDoc, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
@@ -227,6 +232,29 @@
     let lastChoices = [];
     let animationTimeouts = [];
 
+    async function checkGlobalVoteReset() {
+      const ref = doc(db, "settings", "votesReset");
+      const snap = await getDoc(ref);
+      if (snap.exists()) {
+        const serverKey = snap.data().key;
+        const localKey = localStorage.getItem("votesResetKey");
+        if (serverKey !== localKey) {
+          localStorage.setItem("votesUsed", "0");
+          localStorage.setItem("lastVoteReset", Date.now().toString());
+          localStorage.setItem("votesResetKey", serverKey);
+          console.log("Votes reset due to global reset key change.");
+        }
+      }
+    }
+
+    async function resetAllVotes() {
+      const adminCode = "secret123";
+      if (prompt("Enter admin reset code:") !== adminCode) return alert("Incorrect code!");
+      const newKey = Date.now().toString();
+      await setDoc(doc(db, "settings", "votesReset"), { key: newKey });
+      alert("All users' votes have been reset!");
+    }
+
     function checkVoteReset() {
       let lastReset = parseInt(localStorage.getItem("lastVoteReset") || "0");
       let now = Date.now();
@@ -236,10 +264,12 @@
         localStorage.setItem("lastVoteReset", now.toString());
       }
     }
+
     function updateVoteCounter() {
       const used = parseInt(localStorage.getItem("votesUsed") || "0");
       document.getElementById("vote-counter").innerText = `Votes left: ${Math.max(0, 10 - used)}/10`;
     }
+
     function updateResetTimer() {
       let lastReset = parseInt(localStorage.getItem("lastVoteReset") || "0");
       let now = Date.now();
@@ -263,15 +293,18 @@
       document.getElementById("choice1").className = "choice";
       document.getElementById("choice2").className = "choice";
     }
+
     function setRandomHoverColor(element) {
       const colors = ['#ff00ff', '#00f0ff', '#ff8800'];
       const randomColor = colors[Math.floor(Math.random() * colors.length)];
       element.style.setProperty('--hover-color', randomColor);
     }
+
     function skipRound() {
       resetChoices();
       nextRound();
     }
+
     async function initScores() {
       const seedNames = ["Nidhi", "Yachna", "Poorvi", "Liri", "Eshanika", "Diya", "Aditi", "Mehak"];
       for (let person of seedNames) {
@@ -282,8 +315,10 @@
         }
       }
       checkVoteReset();
+      await checkGlobalVoteReset();
       updateVoteCounter();
     }
+
     function updateLeaderboardLive() {
       const q = query(collection(db, "leaderboard"), orderBy("votes", "desc"));
       onSnapshot(q, snapshot => {
@@ -305,10 +340,12 @@
         if (currentChoices.length === 0) nextRound();
       });
     }
+
     function getRandomPerson(excludeList = []) {
       let available = allPeople.filter(p => !excludeList.includes(p));
       return available.length > 0 ? available[Math.floor(Math.random() * available.length)] : null;
     }
+
     function nextRound() {
       resetChoices();
       const skipBtn = document.getElementById("skipBtn");
@@ -335,6 +372,7 @@
         c2.classList.remove("fade-in");
       }, 200);
     }
+
     async function pick(index) {
       let votesUsed = parseInt(localStorage.getItem("votesUsed") || "0");
       if (votesUsed >= 10) {
@@ -366,6 +404,7 @@
         nextRound();
       }, 550);
     }
+
     async function resetLeaderboard() {
       resetChoices();
       const adminCode = "secret123";
@@ -378,6 +417,7 @@
       await batch.commit();
       alert("Leaderboard has been reset!");
     }
+
     async function suggestName() {
       resetChoices();
       const name = prompt("Enter the name you want to suggest:");
@@ -385,6 +425,7 @@
       await addDoc(collection(db, "suggestions"), { name: name.trim(), timestamp: serverTimestamp() });
       alert("Your suggestion has been sent for review!");
     }
+
     async function reviewSuggestions() {
       resetChoices();
       const adminCode = "secret123";
@@ -405,6 +446,7 @@
         `;
       });
     }
+
     async function approveSuggestion(id, name) {
       resetChoices();
       await setDoc(doc(db, "leaderboard", name), { name: name, votes: 0 });
@@ -412,17 +454,22 @@
       alert(`Approved and added "${name}" to leaderboard!`);
       reviewSuggestions();
     }
+
     async function rejectSuggestion(id) {
       resetChoices();
       await deleteDoc(doc(db, "suggestions", id));
       alert("Suggestion rejected.");
       reviewSuggestions();
     }
+
     document.getElementById("choice1").addEventListener("click", () => pick(0));
     document.getElementById("choice2").addEventListener("click", () => pick(1));
+
     initScores().then(() => updateLeaderboardLive());
+
     window.skipRound = skipRound;
     window.resetLeaderboard = resetLeaderboard;
+    window.resetAllVotes = resetAllVotes;
     window.suggestName = suggestName;
     window.reviewSuggestions = reviewSuggestions;
     window.approveSuggestion = approveSuggestion;
