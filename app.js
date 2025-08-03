@@ -111,13 +111,30 @@ async function pick(i) {
   localStorage.setItem("votesUsed", used + 1);
   updateVoteCounter();
 
-  // Shake animation
-  const choiceEl = document.getElementById(i === 0 ? "choice1" : "choice2");
-  choiceEl.classList.add("shake");
-  setTimeout(() => choiceEl.classList.remove("shake"), 300);
+  // Theme highlight colors (no red/green)
+  const colors = [
+    "rgba(155, 0, 255, 0.4)",  // purple
+    "rgba(0, 200, 255, 0.4)",  // cyan
+    "rgba(255, 105, 180, 0.4)", // hot pink
+    "rgba(138, 43, 226, 0.4)"  // blue-violet
+  ];
+  const randomColor = colors[Math.floor(Math.random() * colors.length)];
 
-  await updateDoc(doc(db, "leaderboard", currentChoices[i]), { votes: increment(1) });
-  nextRound();
+  const choice1El = document.getElementById("choice1");
+  const choice2El = document.getElementById("choice2");
+
+  choice1El.classList.add("shake");
+  choice2El.classList.add("shake");
+  document.getElementById(i === 0 ? "choice1" : "choice2").style.backgroundColor = randomColor;
+
+  setTimeout(async () => {
+    choice1El.classList.remove("shake");
+    choice2El.classList.remove("shake");
+    choice1El.style.backgroundColor = "";
+    choice2El.style.backgroundColor = "";
+    await updateDoc(doc(db, "leaderboard", currentChoices[i]), { votes: increment(1) });
+    nextRound();
+  }, 300);
 }
 
 function skipRound() {
@@ -130,7 +147,30 @@ function skipRound() {
   if (newUsed > 10) newUsed = 10;
   localStorage.setItem("votesUsed", newUsed);
   updateVoteCounter();
-  nextRound();
+
+  const colors = [
+    "rgba(155, 0, 255, 0.4)",
+    "rgba(0, 200, 255, 0.4)",
+    "rgba(255, 105, 180, 0.4)",
+    "rgba(138, 43, 226, 0.4)"
+  ];
+  const randomColor = colors[Math.floor(Math.random() * colors.length)];
+
+  const choice1El = document.getElementById("choice1");
+  const choice2El = document.getElementById("choice2");
+
+  choice1El.classList.add("shake");
+  choice2El.classList.add("shake");
+  choice1El.style.backgroundColor = randomColor;
+  choice2El.style.backgroundColor = randomColor;
+
+  setTimeout(() => {
+    choice1El.classList.remove("shake");
+    choice2El.classList.remove("shake");
+    choice1El.style.backgroundColor = "";
+    choice2El.style.backgroundColor = "";
+    nextRound();
+  }, 300);
 }
 
 // ----------------- Admin Tools -----------------
@@ -266,6 +306,7 @@ class Raindrop {
     this.length = Math.random() * 15 + 10;
     this.speed = Math.random() * 4 + 2;
     this.opacity = Math.random() * 0.2 + 0.1;
+    this.color = "rgba(200, 0, 255,"; // Purple only
   }
   update() {
     this.y += this.speed;
@@ -273,12 +314,12 @@ class Raindrop {
   }
   draw() {
     ctx.beginPath();
-    ctx.strokeStyle = `rgba(200, 0, 255, ${this.opacity})`;
+    ctx.strokeStyle = `${this.color} ${this.opacity})`;
     ctx.lineWidth = 1.2;
     ctx.moveTo(this.x, this.y);
     ctx.lineTo(this.x, this.y + this.length);
     ctx.shadowBlur = 8;
-    ctx.shadowColor = "rgba(200, 0, 255, 0.6)";
+    ctx.shadowColor = `${this.color} 0.6)`;
     ctx.stroke();
   }
 }
