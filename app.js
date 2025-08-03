@@ -97,13 +97,21 @@ function getRandomPerson(exclude = []) {
 
 function nextRound() {
   if (allPeople.length < 2) return;
+
+  // Reset backgrounds before loading new names
+  const choice1El = document.getElementById("choice1");
+  const choice2El = document.getElementById("choice2");
+  choice1El.style.backgroundColor = "";
+  choice2El.style.backgroundColor = "";
+
   let p1 = getRandomPerson(lastChoices);
   let p2 = getRandomPerson([...lastChoices, p1]);
   currentChoices = [p1, p2];
   lastChoices = [p1, p2];
-  document.getElementById("choice1").innerText = p1;
-  document.getElementById("choice2").innerText = p2;
+  choice1El.innerText = p1;
+  choice2El.innerText = p2;
 }
+
 
 function fadeInNextRound() {
   const choice1El = document.getElementById("choice1");
