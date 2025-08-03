@@ -87,6 +87,7 @@ button:hover {
 .sticky-bar {
   display: flex;
   gap: 8px;
+  justify-content: center;
 }
 @media (max-width: 600px) {
   .sticky-bar {
@@ -98,9 +99,15 @@ button:hover {
     padding: 8px;
     display: flex;
     gap: 8px;
+    justify-content: center;
   }
-  .sticky-bar button { flex: 1; font-size: 0.95em; }
+  .sticky-bar button {
+    flex: 1;
+    font-size: 0.95em;
+    white-space: nowrap;
+  }
 }
+
 
 table {
   border-collapse: collapse;

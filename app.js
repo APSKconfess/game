@@ -6,10 +6,9 @@ import {
 
 import { db } from './firebase.js';
 
-// State variables
 let allPeople = [], currentChoices = [], lastChoices = [], userDocRef = null;
 
-// ----------------- Vote Reset Logic -----------------
+// ----------------- Vote Reset -----------------
 function checkVoteReset() {
   let lastReset = parseInt(localStorage.getItem("lastVoteReset") || "0");
   let now = Date.now(), threeHours = 10800000;
@@ -30,7 +29,8 @@ function updateResetTimer() {
   let h = Math.floor(diff / 3600000),
       m = Math.floor((diff % 3600000) / 60000),
       s = Math.floor((diff % 60000) / 1000);
-  document.getElementById("reset-timer").innerText = `Next reset in: ${h}h ${m.toString().padStart(2,"0")}m ${s.toString().padStart(2,"0")}s`;
+  document.getElementById("reset-timer").innerText =
+    `Next reset in: ${h}h ${m.toString().padStart(2,"0")}m ${s.toString().padStart(2,"0")}s`;
 }
 setInterval(updateResetTimer, 1000);
 
@@ -54,7 +54,7 @@ async function resetAllVotes() {
   alert("All votes reset!");
 }
 
-// ----------------- Init and Leaderboard -----------------
+// ----------------- Init & Leaderboard -----------------
 async function initScores() {
   const seed = ["Nidhi","Yachna","Poorvi","Liri","Eshanika","Diya","Aditi","Mehak"];
   for (let p of seed) {
@@ -96,14 +96,15 @@ function getRandomPerson(exclude = []) {
 }
 
 function nextRound() {
-  if (allPeople.length < 2) return;
-
-  // Reset backgrounds before loading new names
   const choice1El = document.getElementById("choice1");
   const choice2El = document.getElementById("choice2");
+  // Hard reset backgrounds before new names
   choice1El.style.backgroundColor = "";
   choice2El.style.backgroundColor = "";
+  choice1El.style.transition = "";
+  choice2El.style.transition = "";
 
+  if (allPeople.length < 2) return;
   let p1 = getRandomPerson(lastChoices);
   let p2 = getRandomPerson([...lastChoices, p1]);
   currentChoices = [p1, p2];
@@ -111,7 +112,6 @@ function nextRound() {
   choice1El.innerText = p1;
   choice2El.innerText = p2;
 }
-
 
 function fadeInNextRound() {
   const choice1El = document.getElementById("choice1");
@@ -158,7 +158,6 @@ async function pick(i) {
     choice2El.classList.remove("shake");
 
     await updateDoc(doc(db, "leaderboard", currentChoices[i]), { votes: increment(1) });
-
     fadeInNextRound();
   }, 300);
 }
@@ -247,8 +246,7 @@ async function reviewSuggestions() {
   });
 
   document.getElementById("selectAllSuggestions").addEventListener("change", function() {
-    const checkboxes = document.querySelectorAll(".suggestionCheckbox");
-    checkboxes.forEach(cb => cb.checked = this.checked);
+    document.querySelectorAll(".suggestionCheckbox").forEach(cb => cb.checked = this.checked);
   });
 }
 
