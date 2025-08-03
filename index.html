@@ -57,15 +57,6 @@
       max-width: 90%;
     }
     .choice:hover { transform: scale(1.05); }
-    .shake { animation: shake 0.15s; }
-    @keyframes shake {
-      0%, 100% { transform: translateX(0); }
-      25% { transform: translateX(-5px); }
-      50% { transform: translateX(5px); }
-      75% { transform: translateX(-5px); }
-    }
-    .winner { background-color: rgba(0, 255, 100, 0.3) !important; }
-    .loser { background-color: rgba(255, 50, 50, 0.3) !important; opacity: 0.7; }
     button {
       padding: 14px 20px;
       border: none;
@@ -125,7 +116,7 @@
 <body>
   <canvas id="rainCanvas"></canvas>
   <h1>SMASH WHO? 😍🥵</h1>
-  <p class="tagline">Welcome to SMASH OR PASS duos — an anonymous choosing app where players pick between two random baddies.</p>
+  <p class="tagline">Welcome to SMASH OR PASS duos — an anonymous choosing app where players pick between two random hotties.</p>
   <div id="vote-counter">Votes left: 10/10</div>
   <div id="reset-timer">Next reset in: 3h 00m 00s</div>
 
@@ -135,7 +126,7 @@
   </div>
 
   <div class="sticky-bar">
-    <button id="skipBtn" onclick="skipRound()">Skip</button>
+    <button onclick="skipRound()">Skip</button>
     <button onclick="suggestName()">Suggest Name</button>
   </div>
 
@@ -268,8 +259,7 @@
       await updateDoc(doc(db, "leaderboard", currentChoices[i]), { votes: increment(1) });
       nextRound();
     }
-
-    window.skipRound = () => {
+    function skipRound() {
       let used = parseInt(localStorage.getItem("votesUsed") || "0");
       if (used >= 10) {
         alert("Vote limit reached. Wait for reset.");
@@ -280,7 +270,7 @@
       localStorage.setItem("votesUsed", newUsed);
       updateVoteCounter();
       nextRound();
-    };
+    }
 
     async function resetLeaderboard() {
       if (prompt("Enter admin reset code:") !== "secret123") return;
@@ -296,6 +286,7 @@
       await addDoc(collection(db, "suggestions"), { name: name.trim(), timestamp: serverTimestamp() });
       alert("Suggestion sent!");
     }
+
     async function reviewSuggestions() {
       if (prompt("Enter admin code:") !== "secret123") return;
       const panel = document.getElementById("suggestions-panel");
@@ -307,7 +298,6 @@
         return;
       }
 
-      // Select All checkbox
       panel.innerHTML += `
         <div style="margin-bottom:10px;">
           <label><input type="checkbox" id="selectAllSuggestions"> Select All</label>
@@ -327,7 +317,6 @@
         `;
       });
 
-      // Handle Select All click
       document.getElementById("selectAllSuggestions").addEventListener("change", function() {
         const checkboxes = document.querySelectorAll(".suggestionCheckbox");
         checkboxes.forEach(cb => cb.checked = this.checked);
@@ -340,7 +329,6 @@
         alert("No suggestions selected.");
         return;
       }
-
       const batch = writeBatch(db);
       selected.forEach(cb => {
         const id = cb.getAttribute("data-id");
@@ -348,33 +336,27 @@
         batch.set(doc(db, "leaderboard", name), { name: name, votes: 0 });
         batch.delete(doc(db, "suggestions", id));
       });
-
       await batch.commit();
       alert(`Approved ${selected.length} suggestions!`);
-      reviewSuggestions(); // Refresh list
+      reviewSuggestions();
     }
 
     async function joinPresence() {
-      // Check if we already have a presence ID for this session
       let id = sessionStorage.getItem("presenceId");
       if (!id) {
         id = Math.random().toString(36).substr(2, 9);
         sessionStorage.setItem("presenceId", id);
       }
-
       userDocRef = doc(db, "onlineUsers", id);
       await setDoc(userDocRef, { lastActive: serverTimestamp() });
-
-      // Update every 30s
       setInterval(async () => {
         await updateDoc(userDocRef, { lastActive: serverTimestamp() });
       }, 30000);
-
-      // Remove only when tab is closed
       window.addEventListener("beforeunload", async () => {
         await deleteDoc(userDocRef);
       });
     }
+
     function listenOnlineUsers() {
       onSnapshot(collection(db, "onlineUsers"), snap => {
         const now = Date.now();
@@ -387,13 +369,16 @@
       });
     }
 
-    document.getElementById("choice1").onclick = () => pick(0);
-    document.getElementById("choice2").onclick = () => pick(1);
-    window.resetLeaderboard = resetLeaderboard;
-    window.resetAllVotes = resetAllVotes;
+    // Expose functions globally for HTML buttons
+    window.skipRound = skipRound;
     window.suggestName = suggestName;
     window.reviewSuggestions = reviewSuggestions;
-    window.approveSuggestion = approveSuggestion;
+    window.approveSelectedSuggestions = approveSelectedSuggestions;
+    window.resetLeaderboard = resetLeaderboard;
+    window.resetAllVotes = resetAllVotes;
+
+    document.getElementById("choice1").onclick = () => pick(0);
+    document.getElementById("choice2").onclick = () => pick(1);
 
     initScores().then(updateLeaderboardLive);
   </script>
