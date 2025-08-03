@@ -300,17 +300,60 @@
       if (prompt("Enter admin code:") !== "secret123") return;
       const panel = document.getElementById("suggestions-panel");
       panel.innerHTML = "<h3>Suggestions</h3>";
+
       const snap = await getDocs(collection(db, "suggestions"));
+      if (snap.empty) {
+        panel.innerHTML += "<p>No pending suggestions.</p>";
+        return;
+      }
+
+      // Select All checkbox
+      panel.innerHTML += `
+        <div style="margin-bottom:10px;">
+          <label><input type="checkbox" id="selectAllSuggestions"> Select All</label>
+          <button onclick="approveSelectedSuggestions()">Approve Selected</button>
+        </div>
+      `;
+
       snap.forEach(d => {
         const n = d.data().name;
-        panel.innerHTML += `<div>${n} <button onclick="approveSuggestion('${d.id}','${n}')">Approve</button></div>`;
+        panel.innerHTML += `
+          <div>
+            <label>
+              <input type="checkbox" class="suggestionCheckbox" data-id="${d.id}" data-name="${n}">
+              ${n}
+            </label>
+          </div>
+        `;
+      });
+
+      // Handle Select All click
+      document.getElementById("selectAllSuggestions").addEventListener("change", function() {
+        const checkboxes = document.querySelectorAll(".suggestionCheckbox");
+        checkboxes.forEach(cb => cb.checked = this.checked);
       });
     }
-    async function approveSuggestion(id, name) {
-      await setDoc(doc(db, "leaderboard", name), { name: name, votes: 0 });
-      await deleteDoc(doc(db, "suggestions", id));
-      reviewSuggestions();
+
+    async function approveSelectedSuggestions() {
+      const selected = document.querySelectorAll(".suggestionCheckbox:checked");
+      if (selected.length === 0) {
+        alert("No suggestions selected.");
+        return;
+      }
+
+      const batch = writeBatch(db);
+      selected.forEach(cb => {
+        const id = cb.getAttribute("data-id");
+        const name = cb.getAttribute("data-name");
+        batch.set(doc(db, "leaderboard", name), { name: name, votes: 0 });
+        batch.delete(doc(db, "suggestions", id));
+      });
+
+      await batch.commit();
+      alert(`Approved ${selected.length} suggestions!`);
+      reviewSuggestions(); // Refresh list
     }
+
     async function joinPresence() {
       // Check if we already have a presence ID for this session
       let id = sessionStorage.getItem("presenceId");
