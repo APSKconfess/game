@@ -110,6 +110,12 @@ async function pick(i) {
   if (used >= 10) return alert("Vote limit reached. Wait for reset.");
   localStorage.setItem("votesUsed", used + 1);
   updateVoteCounter();
+
+  // Shake animation
+  const choiceEl = document.getElementById(i === 0 ? "choice1" : "choice2");
+  choiceEl.classList.add("shake");
+  setTimeout(() => choiceEl.classList.remove("shake"), 300);
+
   await updateDoc(doc(db, "leaderboard", currentChoices[i]), { votes: increment(1) });
   nextRound();
 }

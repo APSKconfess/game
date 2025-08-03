@@ -55,7 +55,17 @@ h1, h2 {
   min-width: 140px;
   max-width: 90%;
 }
-.choice:hover { transform: scale(1.05); }
+.choice:hover { transform: scale(1.08); background-color: rgba(155, 0, 255, 0.3); }
+.choice.shake {
+  animation: shakeAnim 0.3s ease;
+}
+@keyframes shakeAnim {
+  0% { transform: translateX(0); }
+  25% { transform: translateX(-4px); }
+  50% { transform: translateX(4px); }
+  75% { transform: translateX(-4px); }
+  100% { transform: translateX(0); }
+}
 
 button {
   padding: 14px 20px;
@@ -68,7 +78,11 @@ button {
   font-weight: bold;
   font-size: 1.1em;
 }
+button:hover {
+  background: #b833ff;
+}
 .danger { background: #ff0044; }
+.danger:hover { background: #ff3366; }
 
 .sticky-bar {
   display: flex;
