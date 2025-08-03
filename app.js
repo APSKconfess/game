@@ -66,7 +66,7 @@ async function initScores() {
   await checkGlobalVoteReset();
   updateVoteCounter();
   joinPresence();
-  listenOnlineUsers();
+  startOnlineUsersPolling();
 }
 
 function updateLeaderboardLive() {
@@ -99,11 +99,8 @@ function getRandomPerson(exclude = []) {
 function nextRound() {
   const choice1El = document.getElementById("choice1");
   const choice2El = document.getElementById("choice2");
-  // Explicitly reset backgrounds before new names
   choice1El.style.backgroundColor = defaultChoiceBG;
   choice2El.style.backgroundColor = defaultChoiceBG;
-  choice1El.style.transition = "";
-  choice2El.style.transition = "";
 
   if (allPeople.length < 2) return;
   let p1 = getRandomPerson(lastChoices);
@@ -114,54 +111,13 @@ function nextRound() {
   choice2El.innerText = p2;
 }
 
-function fadeInNextRound() {
-  const choice1El = document.getElementById("choice1");
-  const choice2El = document.getElementById("choice2");
-
-  choice1El.style.opacity = 0;
-  choice2El.style.opacity = 0;
-
-  nextRound();
-
-  setTimeout(() => {
-    choice1El.style.transition = "opacity 0.25s ease";
-    choice2El.style.transition = "opacity 0.25s ease";
-    choice1El.style.opacity = 1;
-    choice2El.style.opacity = 1;
-  }, 10);
-}
-
 async function pick(i) {
   let used = parseInt(localStorage.getItem("votesUsed") || "0");
   if (used >= 10) return alert("Vote limit reached. Wait for reset.");
   localStorage.setItem("votesUsed", used + 1);
   updateVoteCounter();
-
-  const colors = [
-    "rgba(155, 0, 255, 0.4)",
-    "rgba(0, 200, 255, 0.4)",
-    "rgba(255, 105, 180, 0.4)",
-    "rgba(138, 43, 226, 0.4)"
-  ];
-  const randomColor = colors[Math.floor(Math.random() * colors.length)];
-
-  const choice1El = document.getElementById("choice1");
-  const choice2El = document.getElementById("choice2");
-
-  choice1El.classList.add("shake");
-  choice2El.classList.add("shake");
-  document.getElementById(i === 0 ? "choice1" : "choice2").style.backgroundColor = randomColor;
-
-  setTimeout(async () => {
-    // Reset to default background explicitly
-    choice1El.style.backgroundColor = defaultChoiceBG;
-    choice2El.style.backgroundColor = defaultChoiceBG;
-    choice1El.classList.remove("shake");
-    choice2El.classList.remove("shake");
-
-    await updateDoc(doc(db, "leaderboard", currentChoices[i]), { votes: increment(1) });
-    fadeInNextRound();
-  }, 300);
+  await updateDoc(doc(db, "leaderboard", currentChoices[i]), { votes: increment(1) });
+  nextRound();
 }
 
 function skipRound() {
@@ -174,31 +130,7 @@ function skipRound() {
   if (newUsed > 10) newUsed = 10;
   localStorage.setItem("votesUsed", newUsed);
   updateVoteCounter();
-
-  const colors = [
-    "rgba(155, 0, 255, 0.4)",
-    "rgba(0, 200, 255, 0.4)",
-    "rgba(255, 105, 180, 0.4)",
-    "rgba(138, 43, 226, 0.4)"
-  ];
-  const randomColor = colors[Math.floor(Math.random() * colors.length)];
-
-  const choice1El = document.getElementById("choice1");
-  const choice2El = document.getElementById("choice2");
-
-  choice1El.classList.add("shake");
-  choice2El.classList.add("shake");
-  choice1El.style.backgroundColor = randomColor;
-  choice2El.style.backgroundColor = randomColor;
-
-  setTimeout(() => {
-    choice1El.style.backgroundColor = defaultChoiceBG;
-    choice2El.style.backgroundColor = defaultChoiceBG;
-    choice1El.classList.remove("shake");
-    choice2El.classList.remove("shake");
-
-    fadeInNextRound();
-  }, 300);
+  nextRound();
 }
 
 // ----------------- Admin Tools -----------------
@@ -248,7 +180,8 @@ async function reviewSuggestions() {
   });
 
   document.getElementById("selectAllSuggestions").addEventListener("change", function() {
-    document.querySelectorAll(".suggestionCheckbox").forEach(cb => cb.checked = this.checked);
+    const checkboxes = document.querySelectorAll(".suggestionCheckbox");
+    checkboxes.forEach(cb => cb.checked = this.checked);
   });
 }
 
@@ -270,7 +203,7 @@ async function approveSelectedSuggestions() {
   reviewSuggestions();
 }
 
-// ----------------- Online Presence -----------------
+// ----------------- Optimized Online Presence -----------------
 async function joinPresence() {
   let id = sessionStorage.getItem("presenceId");
   if (!id) {
@@ -279,25 +212,40 @@ async function joinPresence() {
   }
   userDocRef = doc(db, "onlineUsers", id);
   await setDoc(userDocRef, { lastActive: serverTimestamp() });
+  
+  // Update presence less often (every 2 mins)
   setInterval(async () => {
     await updateDoc(userDocRef, { lastActive: serverTimestamp() });
-  }, 30000);
+  }, 120000);
+
   window.addEventListener("beforeunload", async () => {
     await deleteDoc(userDocRef);
   });
 }
 
-function listenOnlineUsers() {
-  onSnapshot(collection(db, "onlineUsers"), snap => {
-    const now = Date.now();
-    let count = 0;
-    snap.forEach(d => {
-      const data = d.data();
-      if (data.lastActive?.toMillis && (now - data.lastActive.toMillis()) < 60000) count++;
-    });
-    document.getElementById("online-count").innerText = `Anonymous users online: ${count}`;
+async function updateOnlineCount() {
+  const snap = await getDocs(collection(db, "onlineUsers"));
+  const now = Date.now();
+  let count = 0;
+  snap.forEach(d => {
+    const data = d.data();
+    if (data.lastActive?.toMillis && (now - data.lastActive.toMillis()) < 60000) count++;
   });
+  document.getElementById("online-count").innerText = `Anonymous users online: ${count}`;
 }
+
+function startOnlineUsersPolling() {
+  updateOnlineCount(); // first run
+  setInterval(updateOnlineCount, 30000); // every 30 seconds
+}
+
+// ----------------- Sidebar Toggle -----------------
+document.getElementById("menu-btn").onclick = () => {
+  document.getElementById("sidebar").style.width = "250px";
+};
+document.getElementById("close-btn").onclick = () => {
+  document.getElementById("sidebar").style.width = "0";
+};
 
 // ----------------- Bind UI -----------------
 document.getElementById("choice1").onclick = () => pick(0);
@@ -312,49 +260,3 @@ window.resetAllVotes = resetAllVotes;
 
 // ----------------- Start -----------------
 initScores().then(updateLeaderboardLive);
-
-// ----------------- Purple Rain Animation -----------------
-const rainCanvas = document.getElementById("rainCanvas");
-const ctx = rainCanvas.getContext("2d");
-let width, height;
-
-function resizeCanvas() {
-  width = rainCanvas.width = window.innerWidth;
-  height = rainCanvas.height = window.innerHeight;
-}
-window.addEventListener("resize", resizeCanvas);
-resizeCanvas();
-
-class Raindrop {
-  constructor() { this.reset(); }
-  reset() {
-    this.x = Math.random() * width;
-    this.y = Math.random() * -height;
-    this.length = Math.random() * 15 + 10;
-    this.speed = Math.random() * 4 + 2;
-    this.opacity = Math.random() * 0.2 + 0.1;
-    this.color = "rgba(200, 0, 255,"; // Purple only
-  }
-  update() {
-    this.y += this.speed;
-    if (this.y > height) this.reset();
-  }
-  draw() {
-    ctx.beginPath();
-    ctx.strokeStyle = `${this.color} ${this.opacity})`;
-    ctx.lineWidth = 1.2;
-    ctx.moveTo(this.x, this.y);
-    ctx.lineTo(this.x, this.y + this.length);
-    ctx.shadowBlur = 8;
-    ctx.shadowColor = `${this.color} 0.6)`;
-    ctx.stroke();
-  }
-}
-const drops = [];
-for (let i = 0; i < 120; i++) drops.push(new Raindrop());
-function animateRain() {
-  ctx.clearRect(0, 0, width, height);
-  drops.forEach(d => { d.update(); d.draw(); });
-  requestAnimationFrame(animateRain);
-}
-animateRain();

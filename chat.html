@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Anonymous Chat</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Hamburger menu -->
+  <div id="menu-btn" class="menu-btn">&#9776;</div>
+
+  <!-- Sidebar -->
+  <div id="sidebar" class="sidebar">
+    <a href="#" class="close-btn" id="close-btn">&times;</a>
+    <a href="index.html">🏠 Home</a>
+    <a href="chat.html">💬 Chat</a>
+  </div>
+
+  <h1>💬 Anonymous Chat</h1>
+  <p class="tagline">Talk with everyone currently online. Messages are anonymous.</p>
+
+  <!-- Chat container -->
+  <div id="chat-container">
+    <div id="messages"></div>
+    <div id="chat-input">
+      <input type="text" id="messageInput" placeholder="Type your message...">
+      <button id="sendBtn">Send</button>
+    </div>
+  </div>
+
+  <script type="module" src="chat.js"></script>
+</body>
+</html>
