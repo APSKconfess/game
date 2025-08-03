@@ -7,6 +7,7 @@ import {
 import { db } from './firebase.js';
 
 let allPeople = [], currentChoices = [], lastChoices = [], userDocRef = null;
+const defaultChoiceBG = "rgba(30, 30, 47, 0.9)"; // Default background
 
 // ----------------- Vote Reset -----------------
 function checkVoteReset() {
@@ -98,9 +99,9 @@ function getRandomPerson(exclude = []) {
 function nextRound() {
   const choice1El = document.getElementById("choice1");
   const choice2El = document.getElementById("choice2");
-  // Hard reset backgrounds before new names
-  choice1El.style.backgroundColor = "";
-  choice2El.style.backgroundColor = "";
+  // Explicitly reset backgrounds before new names
+  choice1El.style.backgroundColor = defaultChoiceBG;
+  choice2El.style.backgroundColor = defaultChoiceBG;
   choice1El.style.transition = "";
   choice2El.style.transition = "";
 
@@ -152,8 +153,9 @@ async function pick(i) {
   document.getElementById(i === 0 ? "choice1" : "choice2").style.backgroundColor = randomColor;
 
   setTimeout(async () => {
-    choice1El.style.backgroundColor = "";
-    choice2El.style.backgroundColor = "";
+    // Reset to default background explicitly
+    choice1El.style.backgroundColor = defaultChoiceBG;
+    choice2El.style.backgroundColor = defaultChoiceBG;
     choice1El.classList.remove("shake");
     choice2El.classList.remove("shake");
 
@@ -190,8 +192,8 @@ function skipRound() {
   choice2El.style.backgroundColor = randomColor;
 
   setTimeout(() => {
-    choice1El.style.backgroundColor = "";
-    choice2El.style.backgroundColor = "";
+    choice1El.style.backgroundColor = defaultChoiceBG;
+    choice2El.style.backgroundColor = defaultChoiceBG;
     choice1El.classList.remove("shake");
     choice2El.classList.remove("shake");
 
