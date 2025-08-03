@@ -105,18 +105,34 @@ function nextRound() {
   document.getElementById("choice2").innerText = p2;
 }
 
+function fadeInNextRound() {
+  const choice1El = document.getElementById("choice1");
+  const choice2El = document.getElementById("choice2");
+
+  choice1El.style.opacity = 0;
+  choice2El.style.opacity = 0;
+
+  nextRound();
+
+  setTimeout(() => {
+    choice1El.style.transition = "opacity 0.25s ease";
+    choice2El.style.transition = "opacity 0.25s ease";
+    choice1El.style.opacity = 1;
+    choice2El.style.opacity = 1;
+  }, 10);
+}
+
 async function pick(i) {
   let used = parseInt(localStorage.getItem("votesUsed") || "0");
   if (used >= 10) return alert("Vote limit reached. Wait for reset.");
   localStorage.setItem("votesUsed", used + 1);
   updateVoteCounter();
 
-  // Theme highlight colors (no red/green)
   const colors = [
-    "rgba(155, 0, 255, 0.4)",  // purple
-    "rgba(0, 200, 255, 0.4)",  // cyan
-    "rgba(255, 105, 180, 0.4)", // hot pink
-    "rgba(138, 43, 226, 0.4)"  // blue-violet
+    "rgba(155, 0, 255, 0.4)",
+    "rgba(0, 200, 255, 0.4)",
+    "rgba(255, 105, 180, 0.4)",
+    "rgba(138, 43, 226, 0.4)"
   ];
   const randomColor = colors[Math.floor(Math.random() * colors.length)];
 
@@ -128,12 +144,14 @@ async function pick(i) {
   document.getElementById(i === 0 ? "choice1" : "choice2").style.backgroundColor = randomColor;
 
   setTimeout(async () => {
-    choice1El.classList.remove("shake");
-    choice2El.classList.remove("shake");
     choice1El.style.backgroundColor = "";
     choice2El.style.backgroundColor = "";
+    choice1El.classList.remove("shake");
+    choice2El.classList.remove("shake");
+
     await updateDoc(doc(db, "leaderboard", currentChoices[i]), { votes: increment(1) });
-    nextRound();
+
+    fadeInNextRound();
   }, 300);
 }
 
@@ -165,11 +183,12 @@ function skipRound() {
   choice2El.style.backgroundColor = randomColor;
 
   setTimeout(() => {
-    choice1El.classList.remove("shake");
-    choice2El.classList.remove("shake");
     choice1El.style.backgroundColor = "";
     choice2El.style.backgroundColor = "";
-    nextRound();
+    choice1El.classList.remove("shake");
+    choice2El.classList.remove("shake");
+
+    fadeInNextRound();
   }, 300);
 }
 
