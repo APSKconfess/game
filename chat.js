@@ -23,6 +23,13 @@ const messagesRef = collection(db, "chatMessages");
 
 // Send message
 document.getElementById("sendBtn").addEventListener("click", async () => {
+  sendMessage();
+});
+document.getElementById("messageInput").addEventListener("keypress", e => {
+  if (e.key === "Enter") sendMessage();
+});
+
+async function sendMessage() {
   const text = document.getElementById("messageInput").value.trim();
   if (!text) return;
   await addDoc(messagesRef, {
@@ -31,7 +38,7 @@ document.getElementById("sendBtn").addEventListener("click", async () => {
     timestamp: serverTimestamp()
   });
   document.getElementById("messageInput").value = "";
-});
+}
 
 // Listen for messages
 const q = query(messagesRef, orderBy("timestamp", "asc"));
