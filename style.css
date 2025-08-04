@@ -196,3 +196,93 @@ th {
   font-size: 30px;
   cursor: pointer;
 }
+
+/* after this is chat.html style */
+
+/* Chat container styling */
+#chat-container {
+  max-width: 600px;
+  margin: 20px auto;
+  display: flex;
+  flex-direction: column;
+  height: 80vh;
+  border: 1px solid #444;
+  border-radius: 10px;
+  overflow: hidden;
+  background-color: rgba(20, 20, 30, 0.95);
+}
+
+/* Messages area */
+#messages {
+  flex: 1;
+  padding: 10px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Message bubble */
+.message {
+  max-width: 75%;
+  padding: 8px 12px;
+  margin-bottom: 8px;
+  border-radius: 15px;
+  font-size: 14px;
+  line-height: 1.4;
+  word-wrap: break-word;
+}
+
+/* User's own messages */
+.my-message {
+  align-self: flex-end;
+  background-color: #4a90e2;
+  color: white;
+  border-bottom-right-radius: 5px;
+}
+
+/* Other users' messages */
+.other-message {
+  align-self: flex-start;
+  background-color: #333;
+  color: #ddd;
+  border-bottom-left-radius: 5px;
+}
+
+/* Chat input area */
+#chat-input {
+  display: flex;
+  border-top: 1px solid #444;
+  background-color: rgba(15, 15, 25, 0.95);
+}
+
+#messageInput {
+  flex: 1;
+  padding: 10px;
+  border: none;
+  outline: none;
+  background-color: transparent;
+  color: white;
+}
+
+#sendBtn {
+  padding: 0 15px;
+  border: none;
+  background-color: #4a90e2;
+  color: white;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+#sendBtn:hover {
+  background-color: #357ab8;
+}
+
+/* Scrollbar styling for messages */
+#messages::-webkit-scrollbar {
+  width: 6px;
+}
+
+#messages::-webkit-scrollbar-thumb {
+  background: #555;
+  border-radius: 3px;
+}

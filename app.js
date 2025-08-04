@@ -1,12 +1,12 @@
 import {
   doc, getDoc, setDoc, updateDoc, increment, collection,
   query, orderBy, onSnapshot, writeBatch, addDoc, serverTimestamp,
-  deleteDoc, getDocs
+  getDocs
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 import { db } from './firebase.js';
 
-let allPeople = [], currentChoices = [], lastChoices = [], userDocRef = null;
+let allPeople = [], currentChoices = [], lastChoices = [];
 const defaultChoiceBG = "rgba(30, 30, 47, 0.9)"; // Default background
 
 // ----------------- Vote Reset -----------------
@@ -65,8 +65,6 @@ async function initScores() {
   checkVoteReset();
   await checkGlobalVoteReset();
   updateVoteCounter();
-  joinPresence();
-  startOnlineUsersPolling();
 }
 
 function updateLeaderboardLive() {
@@ -201,42 +199,6 @@ async function approveSelectedSuggestions() {
   await batch.commit();
   alert(`Approved ${selected.length} suggestions!`);
   reviewSuggestions();
-}
-
-// ----------------- Optimized Online Presence -----------------
-async function joinPresence() {
-  let id = sessionStorage.getItem("presenceId");
-  if (!id) {
-    id = Math.random().toString(36).substr(2, 9);
-    sessionStorage.setItem("presenceId", id);
-  }
-  userDocRef = doc(db, "onlineUsers", id);
-  await setDoc(userDocRef, { lastActive: serverTimestamp() });
-  
-  // Update presence less often (every 2 mins)
-  setInterval(async () => {
-    await updateDoc(userDocRef, { lastActive: serverTimestamp() });
-  }, 120000);
-
-  window.addEventListener("beforeunload", async () => {
-    await deleteDoc(userDocRef);
-  });
-}
-
-async function updateOnlineCount() {
-  const snap = await getDocs(collection(db, "onlineUsers"));
-  const now = Date.now();
-  let count = 0;
-  snap.forEach(d => {
-    const data = d.data();
-    if (data.lastActive?.toMillis && (now - data.lastActive.toMillis()) < 60000) count++;
-  });
-  document.getElementById("online-count").innerText = `Anonymous users online: ${count}`;
-}
-
-function startOnlineUsersPolling() {
-  updateOnlineCount(); // first run
-  setInterval(updateOnlineCount, 30000); // every 30 seconds
 }
 
 // ----------------- Sidebar Toggle -----------------
