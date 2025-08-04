@@ -2,7 +2,7 @@
 <html>
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Anonymous Chat</title>
   <link rel="stylesheet" href="style.css">
 </head>
@@ -22,9 +22,9 @@
 
   <!-- Chat container -->
   <div id="chat-container">
-    <div id="messages" class="messages"></div>
+    <div id="messages"></div>
     <div id="chat-input">
-      <input type="text" id="messageInput" placeholder="Type your message...">
+      <input type="text" id="messageInput" placeholder="Type your message..." autocomplete="off">
       <button id="sendBtn">Send</button>
     </div>
   </div>

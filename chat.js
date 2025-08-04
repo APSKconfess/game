@@ -1,57 +1,82 @@
-import { db } from './firebase.js';
 import {
   collection, addDoc, serverTimestamp,
-  query, orderBy, onSnapshot
+  query, orderBy, onSnapshot, limit
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { db } from "./firebase.js";
 
 // Sidebar toggle
 document.getElementById("menu-btn").onclick = () => {
   const sidebar = document.getElementById("sidebar");
-  sidebar.style.width = sidebar.style.width === "250px" ? "0" : "250px";
+  sidebar.style.width = (sidebar.style.width === "250px") ? "0" : "250px";
 };
 document.getElementById("close-btn").onclick = () => {
   document.getElementById("sidebar").style.width = "0";
 };
 
-// Generate unique ID for this user
-if (!localStorage.getItem("chatUserId")) {
-  localStorage.setItem("chatUserId", Math.random().toString(36).substr(2, 9));
+// Persistent username
+if (!localStorage.getItem("chatUsername")) {
+  const randomNum = Math.floor(Math.random() * 1000);
+  localStorage.setItem("chatUsername", `Anonymous User ${randomNum}`);
 }
-const userId = localStorage.getItem("chatUserId");
+const username = localStorage.getItem("chatUsername");
 
-const messagesRef = collection(db, "chatMessages");
+// DOM elements
+const messagesDiv = document.getElementById("messages");
+const input = document.getElementById("messageInput");
+const sendBtn = document.getElementById("sendBtn");
 
 // Send message
-document.getElementById("sendBtn").addEventListener("click", async () => {
-  sendMessage();
-});
-document.getElementById("messageInput").addEventListener("keypress", e => {
+async function sendMessage() {
+  const text = input.value.trim();
+  if (!text) return;
+
+  await addDoc(collection(db, "messages"), {
+    text,
+    user: username,
+    timestamp: serverTimestamp()
+  });
+  input.value = "";
+}
+
+// Listen for Enter key
+input.addEventListener("keypress", (e) => {
   if (e.key === "Enter") sendMessage();
 });
 
-async function sendMessage() {
-  const text = document.getElementById("messageInput").value.trim();
-  if (!text) return;
-  await addDoc(messagesRef, {
-    text,
-    userId,
-    timestamp: serverTimestamp()
-  });
-  document.getElementById("messageInput").value = "";
-}
+// Send button click
+sendBtn.addEventListener("click", sendMessage);
 
-// Listen for messages
-const q = query(messagesRef, orderBy("timestamp", "asc"));
-onSnapshot(q, snapshot => {
-  const messagesDiv = document.getElementById("messages");
+// Live message listener
+const q = query(collection(db, "messages"), orderBy("timestamp", "asc"), limit(50));
+onSnapshot(q, (snapshot) => {
   messagesDiv.innerHTML = "";
+  let lastUser = "";
   snapshot.forEach(doc => {
-    const msg = doc.data();
-    const msgDiv = document.createElement("div");
-    msgDiv.classList.add("message");
-    msgDiv.classList.add(msg.userId === userId ? "own" : "other");
-    msgDiv.textContent = msg.text;
-    messagesDiv.appendChild(msgDiv);
+    const data = doc.data();
+    const isMe = data.user === username;
+
+    // Wrapper for message block
+    const msgBlock = document.createElement("div");
+    msgBlock.className = isMe ? "message me" : "message other";
+
+    // Show username if not me and different from previous
+    if (!isMe && data.user !== lastUser) {
+      const nameTag = document.createElement("div");
+      nameTag.className = "username";
+      nameTag.innerText = data.user;
+      msgBlock.appendChild(nameTag);
+    }
+
+    // Bubble
+    const bubble = document.createElement("div");
+    bubble.className = "bubble";
+    bubble.innerText = data.text;
+    msgBlock.appendChild(bubble);
+
+    messagesDiv.appendChild(msgBlock);
+    lastUser = data.user;
   });
+
+  // Auto scroll to bottom
   messagesDiv.scrollTop = messagesDiv.scrollHeight;
 });
