@@ -16,7 +16,7 @@ document.getElementById("close-btn").onclick = () => {
 // Persistent username
 if (!localStorage.getItem("chatUsername")) {
   const randomNum = Math.floor(Math.random() * 1000);
-  localStorage.setItem("chatUsername", `Anonymous User ${randomNum}`);
+  localStorage.setItem("chatUsername", `User ${randomNum}`);
 }
 const username = localStorage.getItem("chatUsername");
 
@@ -38,15 +38,15 @@ async function sendMessage() {
   input.value = "";
 }
 
-// Listen for Enter key
+// Enter key
 input.addEventListener("keypress", (e) => {
   if (e.key === "Enter") sendMessage();
 });
 
-// Send button click
+// Send button
 sendBtn.addEventListener("click", sendMessage);
 
-// Live message listener
+// Live updates
 const q = query(collection(db, "messages"), orderBy("timestamp", "asc"), limit(50));
 onSnapshot(q, (snapshot) => {
   messagesDiv.innerHTML = "";
@@ -55,11 +55,9 @@ onSnapshot(q, (snapshot) => {
     const data = doc.data();
     const isMe = data.user === username;
 
-    // Wrapper for message block
     const msgBlock = document.createElement("div");
     msgBlock.className = isMe ? "message me" : "message other";
 
-    // Show username if not me and different from previous
     if (!isMe && data.user !== lastUser) {
       const nameTag = document.createElement("div");
       nameTag.className = "username";
@@ -67,7 +65,6 @@ onSnapshot(q, (snapshot) => {
       msgBlock.appendChild(nameTag);
     }
 
-    // Bubble
     const bubble = document.createElement("div");
     bubble.className = "bubble";
     bubble.innerText = data.text;
@@ -77,6 +74,6 @@ onSnapshot(q, (snapshot) => {
     lastUser = data.user;
   });
 
-  // Auto scroll to bottom
+  // Scroll to bottom
   messagesDiv.scrollTop = messagesDiv.scrollHeight;
 });
