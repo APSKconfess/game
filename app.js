@@ -7,7 +7,7 @@ import {
 import { db } from './firebase.js';
 
 let allPeople = [], currentChoices = [], lastChoices = [];
-const defaultChoiceBG = "rgba(30, 30, 47, 0.9)"; // Default background
+const defaultChoiceBG = "rgba(30, 30, 47, 0.9)";
 
 // ----------------- Vote Reset -----------------
 function checkVoteReset() {
@@ -21,7 +21,8 @@ function checkVoteReset() {
 
 function updateVoteCounter() {
   const used = parseInt(localStorage.getItem("votesUsed") || "0");
-  document.getElementById("vote-counter").innerText = `Votes left: ${10 - used}/10`;
+  const vc = document.getElementById("vote-counter");
+  if (vc) vc.innerText = `Votes left: ${10 - used}/10`;
 }
 
 function updateResetTimer() {
@@ -30,8 +31,8 @@ function updateResetTimer() {
   let h = Math.floor(diff / 3600000),
       m = Math.floor((diff % 3600000) / 60000),
       s = Math.floor((diff % 60000) / 1000);
-  document.getElementById("reset-timer").innerText =
-    `Next reset in: ${h}h ${m.toString().padStart(2,"0")}m ${s.toString().padStart(2,"0")}s`;
+  const rt = document.getElementById("reset-timer");
+  if (rt) rt.innerText = `Next reset in: ${h}h ${m.toString().padStart(2,"0")}m ${s.toString().padStart(2,"0")}s`;
 }
 setInterval(updateResetTimer, 1000);
 
@@ -70,7 +71,8 @@ async function initScores() {
 function updateLeaderboardLive() {
   const qy = query(collection(db, "leaderboard"), orderBy("votes", "desc"));
   onSnapshot(qy, snap => {
-    let tbody = document.getElementById("leaderboard-body");
+    const tbody = document.getElementById("leaderboard-body");
+    if (!tbody) return;
     tbody.innerHTML = "";
     let rank = 1;
     allPeople = [];
@@ -97,6 +99,8 @@ function getRandomPerson(exclude = []) {
 function nextRound() {
   const choice1El = document.getElementById("choice1");
   const choice2El = document.getElementById("choice2");
+  if (!choice1El || !choice2El) return;
+
   choice1El.style.backgroundColor = defaultChoiceBG;
   choice2El.style.backgroundColor = defaultChoiceBG;
 
@@ -150,6 +154,7 @@ async function suggestName() {
 async function reviewSuggestions() {
   if (prompt("Enter admin code:") !== "secret123") return;
   const panel = document.getElementById("suggestions-panel");
+  if (!panel) return;
   panel.innerHTML = "<h3>Suggestions</h3>";
 
   const snap = await getDocs(collection(db, "suggestions"));
@@ -202,16 +207,26 @@ async function approveSelectedSuggestions() {
 }
 
 // ----------------- Sidebar Toggle -----------------
-document.getElementById("menu-btn").onclick = () => {
-  document.getElementById("sidebar").style.width = "250px";
-};
-document.getElementById("close-btn").onclick = () => {
-  document.getElementById("sidebar").style.width = "0";
-};
+const menuBtn = document.getElementById("menu-btn");
+const closeBtn = document.getElementById("close-btn");
+
+if (menuBtn && closeBtn) {
+  menuBtn.onclick = () => {
+    document.getElementById("sidebar").style.width = "250px";
+  };
+  closeBtn.onclick = () => {
+    document.getElementById("sidebar").style.width = "0";
+  };
+}
 
 // ----------------- Bind UI -----------------
-document.getElementById("choice1").onclick = () => pick(0);
-document.getElementById("choice2").onclick = () => pick(1);
+const choice1El = document.getElementById("choice1");
+const choice2El = document.getElementById("choice2");
+
+if (choice1El && choice2El) {
+  choice1El.onclick = () => pick(0);
+  choice2El.onclick = () => pick(1);
+}
 
 window.skipRound = skipRound;
 window.suggestName = suggestName;
