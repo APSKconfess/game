@@ -30,7 +30,7 @@ async function sendMessage() {
   const text = input.value.trim();
   if (!text) return;
 
-  await addDoc(collection(db, "messages"), {
+  await addDoc(collection(db, "chatMessages"), {
     text,
     user: username,
     timestamp: serverTimestamp()
@@ -77,16 +77,3 @@ onSnapshot(q, (snapshot) => {
   // Scroll to bottom
   messagesDiv.scrollTop = messagesDiv.scrollHeight;
 });
-
-// Expose function to console
-window.sendChatMessage = async function(messageText) {
-  if (!messageText) return console.error("Message cannot be empty");
-  
-  await addDoc(collection(db, "messages"), {
-    text: messageText,
-    user: "Admin", // You can set anything here
-    timestamp: serverTimestamp()
-  });
-
-  console.log(`Message sent: "${messageText}"`);
-};
