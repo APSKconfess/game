@@ -114,7 +114,7 @@ onSnapshot(q, (snapshot) => {
 window.sendChatMessage = async function(messageText) {
   if (!messageText) return console.error("Message cannot be empty");
   
-  await addDoc(collection(db, "messages"), {
+  await addDoc(collection(db, "chatMessages"), {
     text: messageText,
     user: "Admin", // You can set anything here
     timestamp: serverTimestamp()
