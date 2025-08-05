@@ -26,49 +26,49 @@ const input = document.getElementById("messageInput");
 const sendBtn = document.getElementById("sendBtn");
 
 // Send message
-// async function sendMessage() {
-//   const text = input.value.trim();
-//   if (!text) return;
-
-//   await addDoc(collection(db, "chatMessages"), {
-//     text,
-//     user: username,
-//     timestamp: serverTimestamp()
-//   });
-//   input.value = "";
-// }
-
 async function sendMessage() {
   const text = input.value.trim();
   if (!text) return;
 
-  // Add the new message first
   await addDoc(collection(db, "chatMessages"), {
     text,
     user: username,
     timestamp: serverTimestamp()
   });
-
   input.value = "";
-
-  // Now check the total number of messages
-  const snapshot = await getDocs(query(
-    collection(db, "chatMessages"),
-    orderBy("timestamp", "asc")
-  ));
-
-  const messages = snapshot.docs;
-
-  const maxMessages = 50;
-  if (messages.length > maxMessages) {
-    const extraMessages = messages.length - maxMessages;
-
-    // Delete the oldest messages
-    for (let i = 0; i < extraMessages; i++) {
-      await deleteDoc(messages[i].ref);
-    }
-  }
 }
+
+// async function sendMessage() {
+//   const text = input.value.trim();
+//   if (!text) return;
+
+//   // Add the new message first
+//   await addDoc(collection(db, "chatMessages"), {
+//     text,
+//     user: username,
+//     timestamp: serverTimestamp()
+//   });
+
+//   input.value = "";
+
+//   // Now check the total number of messages
+//   const snapshot = await getDocs(query(
+//     collection(db, "chatMessages"),
+//     orderBy("timestamp", "asc")
+//   ));
+
+//   const messages = snapshot.docs;
+
+//   const maxMessages = 50;
+//   if (messages.length > maxMessages) {
+//     const extraMessages = messages.length - maxMessages;
+
+//     // Delete the oldest messages
+//     for (let i = 0; i < extraMessages; i++) {
+//       await deleteDoc(messages[i].ref);
+//     }
+//   }
+// }
 
 
 // Enter key
@@ -80,7 +80,7 @@ input.addEventListener("keypress", (e) => {
 sendBtn.addEventListener("click", sendMessage);
 
 // Live updates
-const q = query(collection(db, "chatMessages"), orderBy("timestamp", "asc"), limit(55));
+const q = query(collection(db, "chatMessages"), orderBy("timestamp", "asc"));
 onSnapshot(q, (snapshot) => {
   messagesDiv.innerHTML = "";
   let lastUser = "";
