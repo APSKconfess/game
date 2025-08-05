@@ -48,10 +48,12 @@ sendBtn.addEventListener("click", sendMessage);
 
 // Live updates
 const q = query(collection(db, "chatMessages"), orderBy("timestamp", "asc"), limit(50));
-onSnapshot(q, (snapshot) => {
+onSnapshot(q, async (snapshot) => {
   messagesDiv.innerHTML = "";
   let lastUser = "";
-  snapshot.forEach(doc => {
+  const docs = snapshot.docs;
+
+  docs.forEach(doc => {
     const data = doc.data();
     const isMe = data.user === username;
 
@@ -74,6 +76,43 @@ onSnapshot(q, (snapshot) => {
     lastUser = data.user;
   });
 
-  // Scroll to bottom
   messagesDiv.scrollTop = messagesDiv.scrollHeight;
+
+  // 🔥 Delete old messages (keep only last 50)
+  if (snapshot.size > 50) {
+    const extra = snapshot.docs.slice(0, snapshot.size - 50);
+    for (const docSnap of extra) {
+      await deleteDoc(docSnap.ref);
+    }
+  }
 });
+
+// onSnapshot(q, (snapshot) => {
+//   messagesDiv.innerHTML = "";
+//   let lastUser = "";
+//   snapshot.forEach(doc => {
+//     const data = doc.data();
+//     const isMe = data.user === username;
+
+//     const msgBlock = document.createElement("div");
+//     msgBlock.className = isMe ? "message me" : "message other";
+
+//     if (!isMe && data.user !== lastUser) {
+//       const nameTag = document.createElement("div");
+//       nameTag.className = "username";
+//       nameTag.innerText = data.user;
+//       msgBlock.appendChild(nameTag);
+//     }
+
+//     const bubble = document.createElement("div");
+//     bubble.className = "bubble";
+//     bubble.innerText = data.text;
+//     msgBlock.appendChild(bubble);
+
+//     messagesDiv.appendChild(msgBlock);
+//     lastUser = data.user;
+//   });
+
+//   // Scroll to bottom
+//   messagesDiv.scrollTop = messagesDiv.scrollHeight;
+// });
