@@ -26,17 +26,50 @@ const input = document.getElementById("messageInput");
 const sendBtn = document.getElementById("sendBtn");
 
 // Send message
+// async function sendMessage() {
+//   const text = input.value.trim();
+//   if (!text) return;
+
+//   await addDoc(collection(db, "chatMessages"), {
+//     text,
+//     user: username,
+//     timestamp: serverTimestamp()
+//   });
+//   input.value = "";
+// }
+
 async function sendMessage() {
   const text = input.value.trim();
   if (!text) return;
 
+  // Add the new message first
   await addDoc(collection(db, "chatMessages"), {
     text,
     user: username,
     timestamp: serverTimestamp()
   });
+
   input.value = "";
+
+  // Now check the total number of messages
+  const snapshot = await getDocs(query(
+    collection(db, "chatMessages"),
+    orderBy("timestamp", "asc")
+  ));
+
+  const messages = snapshot.docs;
+
+  const maxMessages = 50;
+  if (messages.length > maxMessages) {
+    const extraMessages = messages.length - maxMessages;
+
+    // Delete the oldest messages
+    for (let i = 0; i < extraMessages; i++) {
+      await deleteDoc(messages[i].ref);
+    }
+  }
 }
+
 
 // Enter key
 input.addEventListener("keypress", (e) => {
@@ -48,12 +81,10 @@ sendBtn.addEventListener("click", sendMessage);
 
 // Live updates
 const q = query(collection(db, "chatMessages"), orderBy("timestamp", "asc"), limit(50));
-onSnapshot(q, async (snapshot) => {
+onSnapshot(q, (snapshot) => {
   messagesDiv.innerHTML = "";
   let lastUser = "";
-  const docs = snapshot.docs;
-
-  docs.forEach(doc => {
+  snapshot.forEach(doc => {
     const data = doc.data();
     const isMe = data.user === username;
 
@@ -76,43 +107,6 @@ onSnapshot(q, async (snapshot) => {
     lastUser = data.user;
   });
 
+  // Scroll to bottom
   messagesDiv.scrollTop = messagesDiv.scrollHeight;
-
-  // 🔥 Delete old messages (keep only last 50)
-  if (snapshot.size > 50) {
-    const extra = snapshot.docs.slice(0, snapshot.size - 50);
-    for (const docSnap of extra) {
-      await deleteDoc(docSnap.ref);
-    }
-  }
 });
-
-// onSnapshot(q, (snapshot) => {
-//   messagesDiv.innerHTML = "";
-//   let lastUser = "";
-//   snapshot.forEach(doc => {
-//     const data = doc.data();
-//     const isMe = data.user === username;
-
-//     const msgBlock = document.createElement("div");
-//     msgBlock.className = isMe ? "message me" : "message other";
-
-//     if (!isMe && data.user !== lastUser) {
-//       const nameTag = document.createElement("div");
-//       nameTag.className = "username";
-//       nameTag.innerText = data.user;
-//       msgBlock.appendChild(nameTag);
-//     }
-
-//     const bubble = document.createElement("div");
-//     bubble.className = "bubble";
-//     bubble.innerText = data.text;
-//     msgBlock.appendChild(bubble);
-
-//     messagesDiv.appendChild(msgBlock);
-//     lastUser = data.user;
-//   });
-
-//   // Scroll to bottom
-//   messagesDiv.scrollTop = messagesDiv.scrollHeight;
-// });
