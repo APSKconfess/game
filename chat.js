@@ -110,3 +110,15 @@ onSnapshot(q, (snapshot) => {
   // Scroll to bottom
   messagesDiv.scrollTop = messagesDiv.scrollHeight;
 });
+
+window.sendChatMessage = async function(messageText) {
+  if (!messageText) return console.error("Message cannot be empty");
+  
+  await addDoc(collection(db, "messages"), {
+    text: messageText,
+    user: "Admin", // You can set anything here
+    timestamp: serverTimestamp()
+  });
+
+  console.log(`Message sent: "${messageText}"`);
+};
