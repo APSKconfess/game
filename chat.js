@@ -80,7 +80,7 @@ input.addEventListener("keypress", (e) => {
 sendBtn.addEventListener("click", sendMessage);
 
 // Live updates
-const q = query(collection(db, "chatMessages"), orderBy("timestamp", "asc"), limit(50));
+const q = query(collection(db, "chatMessages"), orderBy("timestamp", "asc"), limit(55));
 onSnapshot(q, (snapshot) => {
   messagesDiv.innerHTML = "";
   let lastUser = "";
