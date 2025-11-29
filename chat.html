@@ -7,6 +7,14 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
+<script>
+  const pass = prompt("Enter the Admin Chat Code:");
+  if (pass !== "bigV") {
+    alert("Incorrect code! Access denied.");
+    window.location.href = "index.html";
+  }
+</script>
+
   <img src="https://i.ibb.co/ymv7tXdy/bhatia.jpg" alt="Funny" style="position: absolute; top: 10px; right: 10px; width: 40px; height: auto; z-index: 1000;">
   <!-- Hamburger menu -->
   <div id="menu-btn" class="menu-btn">&#9776;</div>
